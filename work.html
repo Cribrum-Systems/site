@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Work - ION606 LLC</title>
+	<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+
+<body>
+	<header>
+		<div class="container header-inner">
+			<a href="/" class="logo">ION606</a>
+			<nav>
+				<ul>
+					<li><a href="services">Services</a></li>
+					<li><a href="work">Work</a></li>
+					<li><a href="projects">Projects</a></li>
+					<li><a href="about">About</a></li>
+					<li><a href="contact" class="contact-button">Contact</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+	<main class="container">
+		<h1 class="page-title">Selected Work</h1>
+		<p class="page-intro">
+			These case studies highlight delivery across backend infrastructure,
+			container orchestration, and complex machine learning pipelines.
+			Code is published on <a href="https://git.ion606.com/ION606" target="_blank"
+				rel="noopener noreferrer">git.ion606.com</a> and <a href="https://github.com/ION606" target="_blank"
+				rel="noopener noreferrer">GitHub</a>.
+		</p>
+
+		<section>
+			<h2>Encrypted Kubernetes Messages</h2>
+			<div class="grid grid-cols-2">
+				<div class="stack-sm">
+					<p><strong>Problem:</strong> Service-to-service messaging inside Kubernetes often includes sensitive
+						payloads, but ad-hoc encryption approaches are easy to get wrong and hard to operationalize.</p>
+					<p><strong>Solution:</strong> I built a reference implementation that explores end-to-end encrypted
+						message exchange for Kubernetes workloads, focusing on practical integration points and
+						reproducible demos.</p>
+					<p><strong>Results:</strong> The project provides a concrete starting point for evaluating key
+						management, authenticated encryption, and operational tradeoffs in secure in-cluster
+						communication.</p>
+				</div>
+				<div class="card">
+					<h3>Tech Stack</h3>
+					<p>Kubernetes, security engineering, cryptography, container tooling</p>
+					<h3>Links</h3>
+					<p>
+						<a href="https://github.com/ION606/encrypted-k8-msgs" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h2>ML-Pipeline Tool</h2>
+			<div class="grid grid-cols-2">
+				<div class="stack-sm">
+					<p><strong>Problem:</strong> Engineering teams needed an internal way to run complex LLM-assisted
+						workflows without leaking private code to external services.</p>
+					<p><strong>Solution:</strong> I designed a containerized pipeline that orchestrates local model
+						interactions, iterative code operations, and controlled patching loops with clear execution
+						boundaries.</p>
+					<p><strong>Results:</strong> The system enabled safer automated refactoring and repeatable
+						AI-assisted engineering workflows. It showcases end-to-end ML systems thinking, not just prompt
+						integration.</p>
+				</div>
+				<div class="card">
+					<h3>Tech Stack</h3>
+					<p>Python, Node.js, Docker, local LLM runtimes, git</p>
+					<h3>Links</h3>
+					<p>
+						<a href="https://github.com/ION606/ML-pipeline" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h2>MailPocket Service</h2>
+			<div class="grid grid-cols-2">
+				<div class="stack-sm">
+					<p><strong>Problem:</strong> Static and low-complexity web deployments often need reliable form
+						ingestion without introducing heavy third-party dependencies.</p>
+					<p><strong>Solution:</strong> I built a lightweight backend service in Go with clean HTTP ingestion,
+						storage support, and container-friendly deployment for quick integration into existing
+						infrastructure.</p>
+					<p><strong>Results:</strong> MailPocket powers real form workflows while remaining easy to operate
+						and extend. It demonstrates backend infrastructure pragmatism and operational simplicity.</p>
+				</div>
+				<div class="card">
+					<h3>Tech Stack</h3>
+					<p>Go, SQLite, Docker, HTTP APIs</p>
+					<h3>Links</h3>
+					<p>
+						<a href="https://github.com/ION606/MailPocket" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h2>More Projects</h2>
+			<p class="intro">
+				Explore additional repositories focused on infrastructure engineering,
+				containerization workflows, and ML tooling.
+			</p>
+			<div class="center-action">
+				<a href="projects" class="btn">View Projects Index</a>
+			</div>
+		</section>
+	</main>
+	<footer>
+		<div class="container footer-inner">
+			<div>
+				<p>&copy; 2026 Itamar Oren-Naftalovich.</p>
+			</div>
+			<div>
+				<p>
+					<a href="projects">All Projects</a> |
+					<a href="https://git.ion606.com/ION606" target="_blank" rel="noopener noreferrer">Git</a> |
+					<a href="https://github.com/ION606" target="_blank" rel="noopener noreferrer">GitHub</a> |
+					<a href="https://www.linkedin.com/in/itamar-oren-naftalovich" target="_blank"
+						rel="noopener noreferrer">LinkedIn</a> |
+					<a href="privacy">Privacy</a>
+				</p>
+			</div>
+		</div>
+	</footer>
+	<script type="module" src="assets/js/main.js"></script>
+</body>
+
+</html>

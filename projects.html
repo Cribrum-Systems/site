@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Projects - ION606 LLC</title>
+	<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+
+<body>
+	<header>
+		<div class="container header-inner">
+			<a href="/" class="logo">ION606</a>
+			<nav>
+				<ul>
+					<li><a href="services">Services</a></li>
+					<li><a href="work">Work</a></li>
+					<li><a href="projects">Projects</a></li>
+					<li><a href="about">About</a></li>
+					<li><a href="contact" class="contact-button">Contact</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<main class="container">
+		<h1 class="page-title">Projects</h1>
+		<p class="page-intro">
+			Repository highlights from
+			<a href="https://git.ion606.com/ION606" target="_blank" rel="noopener noreferrer">git.ion606.com/ION606</a>
+			and
+			<a href="https://github.com/ION606" target="_blank" rel="noopener noreferrer">github.com/ION606</a>.
+			This selection focuses on backend infrastructure, containerization, Kubernetes, and ML/agent tooling.
+		</p>
+
+		<section>
+			<h2>Containerization &amp; Platform Engineering</h2>
+			<div class="grid grid-cols-3">
+				<div class="card project-card">
+					<h3>encrypted-k8-msgs</h3>
+					<p>WireGuard (Cilium) + Istio mTLS demo to explore traffic encryption layers and in-cluster
+						observability.</p>
+					<p class="project-tags"><span>Kubernetes</span><span>Cilium/WireGuard</span><span>Istio mTLS</span>
+					</p>
+					<p>
+						<a href="https://github.com/ION606/encrypted-k8-msgs" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+
+				<div class="card project-card">
+					<h3>git-to-gitea</h3>
+					<p>GitHub → Gitea mirroring tool that auto-creates orgs and keeps repositories synced on a schedule.
+					</p>
+					<p class="project-tags"><span>Gitea</span><span>Mirroring</span><span>Automation</span></p>
+					<p>
+						<a href="https://github.com/ION606/git-to-gitea" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+
+				<div class="card project-card">
+					<h3>static-site-hosting</h3>
+					<p>TinySite.cloud: lightweight Flask app for hosting static websites (HTML/CSS/JS) with a simple UI.
+					</p>
+					<p class="project-tags"><span>Python</span><span>Flask</span><span>Docker</span></p>
+					<p>
+						<a href="https://github.com/ION606/static-site-hosting" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+
+				<div class="card project-card">
+					<h3>sharing</h3>
+					<p>Docker compose + proxy setup for PrivateBin and Lufi sharing services.</p>
+					<p class="project-tags"><span>Docker</span><span>Reverse Proxy</span><span>Self-Hosted Gitea
+							Instance</span></p>
+					<p>
+						<a href="https://github.com/ION606/sharing" target="_blank" rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h2>Backend Infrastructure Systems</h2>
+			<div class="grid grid-cols-3">
+				<div class="card project-card">
+					<h3>MailPocket</h3>
+					<p>Lightweight Go server for collecting email form submissions (CSV batching or SQLite storage).</p>
+					<p class="project-tags"><span>Go</span><span>HTTP APIs</span><span>SQLite</span></p>
+					<p>
+						<a href="https://github.com/ION606/MailPocket" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+
+				<div class="card project-card">
+					<h3>ion-stop-enc</h3>
+					<p>Simple encryption/decryption endpoint (password-based) for secure file handling.</p>
+					<p class="project-tags"><span>Security</span><span>API</span><span>JavaScript</span></p>
+					<p>
+						<a href="https://github.com/ION606/ion-stop-enc" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+
+				<div class="card project-card">
+					<h3>github-to-fs</h3>
+					<p>Node package that exposes GitHub repo operations using an fs-like API surface.</p>
+					<p class="project-tags"><span>Node.js</span><span>SDK</span><span>Tooling</span></p>
+					<p>
+						<a href="https://github.com/ION606/github-to-fs" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+
+				<div class="card project-card">
+					<h3>linkedin-api</h3>
+					<p>Node.js package for interacting with LinkedIn programmatically.</p>
+					<p class="project-tags"><span>Node.js</span><span>API</span><span>Package</span></p>
+					<p>
+						<a href="https://github.com/ION606/linkedin-api" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h2>Advanced ML &amp; Agent Workflows</h2>
+			<div class="grid grid-cols-3">
+				<div class="card project-card">
+					<h3>ML-pipeline</h3>
+					<p>Pipeline that integrates search, model iteration, and code correction with local Ollama models.
+					</p>
+					<p class="project-tags"><span>Python</span><span>Ollama</span><span>Docker</span></p>
+					<p>
+						<a href="https://github.com/ION606/ML-pipeline" target="_blank"
+							rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+
+				<div class="card project-card">
+					<h3>MCPs</h3>
+					<p>A collection of Model Context Protocol servers for personal and professional use.</p>
+					<p class="project-tags"><span>MCP</span><span>Tools</span><span>Agents</span></p>
+					<p>
+						<a href="https://github.com/ION606/MCPs" target="_blank" rel="noopener noreferrer">GitHub</a>
+					</p>
+				</div>
+
+				<div class="card project-card">
+					<h3>ollama-plus</h3>
+					<p>Open WebUI + Ollama stack: configs, plugins, RAG server, and a Docker-sandboxed code runner tool.
+					</p>
+					<p class="project-tags"><span>Open WebUI</span><span>RAG</span><span>Sandboxed Exec</span></p>
+					<p>
+						<a href="https://git.ion606.com/ION606/ollama-plus" target="_blank"
+							rel="noopener noreferrer">Gitea</a>
+					</p>
+				</div>
+			</div>
+
+			<p class="intro">
+				For private engagements, client work, and non-public repositories, reach out and I can share relevant
+				samples or walk through architecture and implementation details.
+			</p>
+
+			<div class="btn-group center-action">
+				<a href="https://git.ion606.com/ION606" class="btn" target="_blank" rel="noopener noreferrer">Browse
+					Gitea</a>
+				<a href="https://github.com/ION606?tab=repositories" class="btn" target="_blank"
+					rel="noopener noreferrer">Browse GitHub</a>
+			</div>
+		</section>
+	</main>
+
+	<footer>
+		<div class="container footer-inner">
+			<div>
+				<p>&copy; 2026 Itamar Oren-Naftalovich.</p>
+			</div>
+			<div>
+				<p>
+					<a href="projects">All Projects</a> |
+					<a href="https://git.ion606.com/ION606" target="_blank" rel="noopener noreferrer">Git</a> |
+					<a href="https://github.com/ION606" target="_blank" rel="noopener noreferrer">GitHub</a> |
+					<a href="https://www.linkedin.com/in/itamar-oren-naftalovich" target="_blank"
+						rel="noopener noreferrer">LinkedIn</a> |
+					<a href="privacy">Privacy</a>
+				</p>
+			</div>
+		</div>
+	</footer>
+
+	<script type="module" src="assets/js/main.js"></script>
+</body>
+
+</html>
