@@ -10,14 +10,14 @@
 	<meta name="author" content="Itamar Oren-Naftalovich" />
 	<meta name="robots" content="index, follow" />
 	<meta name="theme-color" content="#0a9396" />
-	<link rel="canonical" href="http://llc.itamarorenn.com/work" />
+	<link rel="canonical" href="http://cribrum.dev/work" />
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="Cribrum Software LLC" />
 	<meta property="og:title" content="Work - Cribrum Software LLC" />
 	<meta property="og:description"
 		content="Case studies that highlight practical delivery in backend engineering, container orchestration, and ML systems." />
-	<meta property="og:url" content="http://llc.itamarorenn.com/work" />
-	<meta property="og:image" content="http://llc.itamarorenn.com/assets/img/logo.png" />
+	<meta property="og:url" content="http://cribrum.dev/work" />
+	<meta property="og:image" content="http://cribrum.dev/assets/img/logo.png" />
 	<meta property="og:image:alt" content="ION606 logo" />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
@@ -25,7 +25,7 @@
 	<meta name="twitter:title" content="Work - Cribrum Software LLC" />
 	<meta name="twitter:description"
 		content="Case studies that highlight practical delivery in backend engineering, container orchestration, and ML systems." />
-	<meta name="twitter:image" content="http://llc.itamarorenn.com/assets/img/logo.png" />
+	<meta name="twitter:image" content="http://cribrum.dev/assets/img/logo.png" />
 	<meta name="twitter:image:alt" content="ION606 logo" />
 	<link rel="icon" href="/assets/img/logo-with-bk.png" type="image/png" />
 	<link rel="stylesheet" href="assets/css/styles.css" />
@@ -82,25 +82,25 @@
 		</section>
 
 		<section>
-			<h2>ML-Pipeline Tool</h2>
+			<h2>ollama-plus</h2>
 			<div class="grid grid-cols-2">
 				<div class="stack-sm">
-					<p><strong>Problem:</strong> Engineering teams needed an internal way to run complex LLM-assisted
-						workflows without leaking private code to external services.</p>
-					<p><strong>Solution:</strong> I designed a containerized pipeline that orchestrates local model
-						interactions, iterative code operations, and controlled patching loops with clear execution
-						boundaries.</p>
-					<p><strong>Results:</strong> The system enabled safer automated refactoring and repeatable
-						AI-assisted engineering workflows. It showcases end-to-end ML systems thinking, not just prompt
-						integration.</p>
+					<p><strong>Problem:</strong> Teams working with sensitive data need production-grade ML inference
+						and
+						retrieval pipelines that never send data to external APIs.</p>
+					<p><strong>Solution:</strong> I built a self-hosted Open WebUI + Ollama stack with a RAG server,
+						custom plugins, and a Docker-sandboxed code execution tool - fully air-gappable.</p>
+					<p><strong>Results:</strong> A working ML infrastructure stack that runs entirely within a client's
+						own facilities, satisfying data residency requirements while delivering real RAG and agent
+						capabilities.</p>
 				</div>
 				<div class="card">
 					<h3>Tech Stack</h3>
-					<p>Python, Node.js, Docker, local LLM runtimes, git</p>
+					<p>Python, Docker, Open WebUI, Ollama, RAG, sandboxed exec</p>
 					<h3>Links</h3>
 					<p>
-						<a href="https://github.com/ION606/ML-pipeline" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
+						<a href="https://git.ion606.com/ION606/ollama-plus" target="_blank"
+							rel="noopener noreferrer">Gitea</a>
 					</p>
 				</div>
 			</div>

@@ -10,14 +10,14 @@
 	<meta name="author" content="Itamar Oren-Naftalovich" />
 	<meta name="robots" content="index, follow" />
 	<meta name="theme-color" content="#0a9396" />
-	<link rel="canonical" href="http://llc.itamarorenn.com/projects" />
+	<link rel="canonical" href="http://cribrum.dev/projects" />
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="Cribrum Software LLC" />
 	<meta property="og:title" content="Projects - Cribrum Software LLC" />
 	<meta property="og:description"
 		content="Explore backend, Kubernetes, and ML projects from ION606 on self-hosted git and GitHub." />
-	<meta property="og:url" content="http://llc.itamarorenn.com/projects" />
-	<meta property="og:image" content="http://llc.itamarorenn.com/assets/img/logo.png" />
+	<meta property="og:url" content="http://cribrum.dev/projects" />
+	<meta property="og:image" content="http://cribrum.dev/assets/img/logo.png" />
 	<meta property="og:image:alt" content="ION606 logo" />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
@@ -25,7 +25,7 @@
 	<meta name="twitter:title" content="Projects - Cribrum Software LLC" />
 	<meta name="twitter:description"
 		content="Explore backend, Kubernetes, and ML projects from ION606 on self-hosted git and GitHub." />
-	<meta name="twitter:image" content="http://llc.itamarorenn.com/assets/img/logo.png" />
+	<meta name="twitter:image" content="http://cribrum.dev/assets/img/logo.png" />
 	<meta name="twitter:image:alt" content="ION606 logo" />
 	<link rel="icon" href="/assets/img/logo-with-bk.png" type="image/png" />
 	<link rel="stylesheet" href="assets/css/styles.css" />
@@ -58,12 +58,11 @@
 		</p>
 
 		<section>
-			<h2>Containerization &amp; Platform Engineering</h2>
 			<div class="grid grid-cols-3">
 				<div class="card project-card">
 					<h3>encrypted-k8-msgs</h3>
-					<p>WireGuard (Cilium) + Istio mTLS demo to explore traffic encryption layers and in-cluster
-						observability.</p>
+					<p>WireGuard (Cilium) + Istio mTLS layered across a Kubernetes cluster - defense-in-depth network
+						security designed for production environments with strict data residency requirements.</p>
 					<p class="project-tags"><span>Kubernetes</span><span>Cilium/WireGuard</span><span>Istio mTLS</span>
 					</p>
 					<p>
@@ -73,115 +72,25 @@
 				</div>
 
 				<div class="card project-card">
-					<h3>git-to-gitea</h3>
-					<p>GitHub → Gitea mirroring tool that auto-creates orgs and keeps repositories synced on a schedule.
-					</p>
-					<p class="project-tags"><span>Gitea</span><span>Mirroring</span><span>Automation</span></p>
+					<h3>ollama-plus</h3>
+					<p>Self-hosted Open WebUI + Ollama stack with a RAG server, custom plugins, and a Docker-sandboxed
+						code execution tool. ML infrastructure that stays entirely within your own facilities.</p>
+					<p class="project-tags"><span>Open WebUI</span><span>RAG</span><span>Sandboxed
+							Exec</span><span>Docker</span></p>
 					<p>
-						<a href="https://github.com/ION606/git-to-gitea" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
+						<a href="https://git.ion606.com/ION606/ollama-plus" target="_blank"
+							rel="noopener noreferrer">Gitea</a>
 					</p>
 				</div>
 
-				<div class="card project-card">
-					<h3>static-site-hosting</h3>
-					<p>TinySite.cloud: lightweight Flask app for hosting static websites (HTML/CSS/JS) with a simple UI.
-					</p>
-					<p class="project-tags"><span>Python</span><span>Flask</span><span>Docker</span></p>
-					<p>
-						<a href="https://github.com/ION606/static-site-hosting" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
-					</p>
-				</div>
-
-				<div class="card project-card">
-					<h3>sharing</h3>
-					<p>Docker compose + proxy setup for PrivateBin and Lufi sharing services.</p>
-					<p class="project-tags"><span>Docker</span><span>Reverse Proxy</span><span>Self-Hosted Gitea
-							Instance</span></p>
-					<p>
-						<a href="https://github.com/ION606/sharing" target="_blank" rel="noopener noreferrer">GitHub</a>
-					</p>
-				</div>
-			</div>
-		</section>
-
-		<section>
-			<h2>Backend Infrastructure Systems</h2>
-			<div class="grid grid-cols-3">
 				<div class="card project-card">
 					<h3>MailPocket</h3>
-					<p>Lightweight Go server for collecting email form submissions (CSV batching or SQLite storage).</p>
+					<p>Lightweight Go server for form submission collection with CSV batching or SQLite persistence:
+						backend systems that are simple to audit, deploy, and own.</p>
 					<p class="project-tags"><span>Go</span><span>HTTP APIs</span><span>SQLite</span></p>
 					<p>
 						<a href="https://github.com/ION606/MailPocket" target="_blank"
 							rel="noopener noreferrer">GitHub</a>
-					</p>
-				</div>
-
-				<div class="card project-card">
-					<h3>ion-stop-enc</h3>
-					<p>Simple encryption/decryption endpoint (password-based) for secure file handling.</p>
-					<p class="project-tags"><span>Security</span><span>API</span><span>JavaScript</span></p>
-					<p>
-						<a href="https://github.com/ION606/ion-stop-enc" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
-					</p>
-				</div>
-
-				<div class="card project-card">
-					<h3>github-to-fs</h3>
-					<p>Node package that exposes GitHub repo operations using an fs-like API surface.</p>
-					<p class="project-tags"><span>Node.js</span><span>SDK</span><span>Tooling</span></p>
-					<p>
-						<a href="https://github.com/ION606/github-to-fs" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
-					</p>
-				</div>
-
-				<div class="card project-card">
-					<h3>linkedin-api</h3>
-					<p>Node.js package for interacting with LinkedIn programmatically.</p>
-					<p class="project-tags"><span>Node.js</span><span>API</span><span>Package</span></p>
-					<p>
-						<a href="https://github.com/ION606/linkedin-api" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
-					</p>
-				</div>
-			</div>
-		</section>
-
-		<section>
-			<h2>Advanced ML &amp; Agent Workflows</h2>
-			<div class="grid grid-cols-3">
-				<div class="card project-card">
-					<h3>ML-pipeline</h3>
-					<p>Pipeline that integrates search, model iteration, and code correction with local Ollama models.
-					</p>
-					<p class="project-tags"><span>Python</span><span>Ollama</span><span>Docker</span></p>
-					<p>
-						<a href="https://github.com/ION606/ML-pipeline" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
-					</p>
-				</div>
-
-				<div class="card project-card">
-					<h3>MCPs</h3>
-					<p>A collection of Model Context Protocol servers for personal and professional use.</p>
-					<p class="project-tags"><span>MCP</span><span>Tools</span><span>Agents</span></p>
-					<p>
-						<a href="https://github.com/ION606/MCPs" target="_blank" rel="noopener noreferrer">GitHub</a>
-					</p>
-				</div>
-
-				<div class="card project-card">
-					<h3>ollama-plus</h3>
-					<p>Open WebUI + Ollama stack: configs, plugins, RAG server, and a Docker-sandboxed code runner tool.
-					</p>
-					<p class="project-tags"><span>Open WebUI</span><span>RAG</span><span>Sandboxed Exec</span></p>
-					<p>
-						<a href="https://git.ion606.com/ION606/ollama-plus" target="_blank"
-							rel="noopener noreferrer">Gitea</a>
 					</p>
 				</div>
 			</div>

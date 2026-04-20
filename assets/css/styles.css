@@ -416,6 +416,13 @@ section .intro {
 	border-radius: 12px;
 	text-align: center;
 	box-shadow: var(--shadow-soft);
+	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.process-step:hover {
+	transform: translateY(-3px);
+	border-color: color-mix(in srgb, var(--border-color) 65%, var(--primary-color) 35%);
+	box-shadow: var(--shadow-card-hover);
 }
 
 .process-step h4 {
