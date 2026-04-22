@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/img/logo.png" alt="Cribrum Software LLC" width="200" />
+  <img src="assets/img/logo.png" alt="Cribrum Systems LLC" width="200" />
 </p>
 
-<h1 align="center">Cribrum Software LLC</h1>
+<h1 align="center">Cribrum Systems LLC</h1>
 
 <p align="center"><em>Cribrum (Latin for <strong>sieve</strong>) - filtering the signal from the noise.</em></p>
 
