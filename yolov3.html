@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>YOLOv3 from scratch in raw PyTorch - Cribrum Systems LLC</title>
+	<meta name="description"
+		content="A YOLOv3 object detector implemented end to end on torch.nn primitives with no torchvision.ops, no ultralytics, and no high-level detection framework. COCO mAP@0.5 of ~55 at 416-pixel input." />
+	<meta name="author" content="Itamar Oren-Naftalovich" />
+	<meta name="robots" content="index, follow" />
+	<meta name="theme-color" content="#0a9396" />
+	<link rel="canonical" href="https://cribrum.dev/yolov3" />
+	<meta property="og:type" content="article" />
+	<meta property="og:site_name" content="Cribrum Systems LLC" />
+	<meta property="og:title" content="YOLOv3 from scratch in raw PyTorch" />
+	<meta property="og:description"
+		content="A YOLOv3 object detector built end to end on torch.nn primitives only." />
+	<meta property="og:url" content="https://cribrum.dev/yolov3" />
+	<meta property="og:image" content="https://cribrum.dev/assets/img/logo.png" />
+	<meta property="og:image:alt" content="Cribrum Systems LLC logo" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="YOLOv3 from scratch in raw PyTorch" />
+	<meta name="twitter:description"
+		content="A YOLOv3 object detector built end to end on torch.nn primitives only." />
+	<meta name="twitter:image" content="https://cribrum.dev/assets/img/logo.png" />
+	<meta name="twitter:image:alt" content="Cribrum Systems LLC logo" />
+	<link rel="icon" href="/assets/img/logo-with-bk.png" type="image/png" />
+	<link rel="stylesheet" href="assets/css/styles.css" />
+	<style>
+		.article-shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); margin-top: 1.6rem; }
+		@media (min-width: 1080px) { .article-shell { grid-template-columns: 240px minmax(0, 1fr); align-items: flex-start; } }
+		.toc { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.1rem 1.15rem; box-shadow: var(--shadow-soft); font-size: 0.88rem; }
+		@media (min-width: 1080px) { .toc { position: sticky; top: 92px; max-height: calc(100vh - 110px); overflow-y: auto; } }
+		.toc h2 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 0.7rem; }
+		.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc-counter; }
+		.toc li { counter-increment: toc-counter; padding: 0.18rem 0; border-left: 2px solid transparent; padding-left: 0.6rem; margin-left: -0.6rem; transition: border-color 0.18s ease, background-color 0.18s ease; }
+		.toc li:hover { border-left-color: var(--primary-color); background-color: var(--surface-muted); }
+		.toc a { color: var(--text-color); display: block; }
+		.toc a::before { content: counter(toc-counter, decimal-leading-zero); color: var(--primary-color); font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; margin-right: 0.55rem; letter-spacing: 0.04em; }
+		.toc a:hover { color: var(--primary-color); }
+		.article { min-width: 0; max-width: 760px; }
+		.article-header { border-bottom: 1px solid var(--border-color); padding-bottom: 1.6rem; margin-bottom: 2rem; }
+		.article-eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 1rem; }
+		.article-eyebrow::before { content: ""; width: 1.6rem; height: 2px; background-color: var(--primary-color); }
+		.article h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.18; margin-bottom: 0.9rem; }
+		.article-meta { display: flex; flex-wrap: wrap; gap: 0.8rem 1.4rem; font-size: 0.85rem; color: var(--text-muted); font-family: "IBM Plex Mono", monospace; }
+		.article-meta span strong { color: var(--text-color); font-weight: 600; }
+		.article .lede { background-color: var(--surface-muted); border-left: 3px solid var(--primary-color); padding: 1.1rem 1.25rem; border-radius: 0 12px 12px 0; font-size: 1.02rem; line-height: 1.7; margin: 1.6rem 0 0; }
+		.article .lede strong { color: var(--text-color); }
+		.article section { margin-top: 3rem; scroll-margin-top: 96px; }
+		.article section h2 { text-align: left; font-size: clamp(1.35rem, 2.6vw, 1.7rem); line-height: 1.25; margin-bottom: 0.4rem; padding-top: 0.4rem; border-top: 1px solid var(--border-color); padding-block-start: 1.6rem; }
+		.article section h2 .section-num { font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; color: var(--primary-color); margin-right: 0.6rem; letter-spacing: 0.08em; }
+		.article h3 { font-size: 1.08rem; margin: 1.5rem 0 0.4rem; color: var(--text-color); }
+		.article p { margin: 0.85rem 0; line-height: 1.7; }
+		.article ul, .article ol { margin: 0.7rem 0 0.9rem 1.4rem; }
+		.article li { margin: 0.35rem 0; line-height: 1.6; }
+		.article a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--primary-color) 40%, transparent); text-underline-offset: 3px; }
+		.article a:hover { text-decoration-color: var(--primary-color); }
+		.article strong { color: var(--text-color); }
+		.article .table-wrap { overflow-x: auto; margin: 1rem 0 1.4rem; border: 1px solid var(--border-color); border-radius: 12px; }
+		.article table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+		.article table th, .article table td { padding: 0.65rem 0.85rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+		.article table th { background-color: var(--surface-muted); font-weight: 600; font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+		.article table tbody tr:last-child td { border-bottom: none; }
+		.article table tbody tr:nth-child(even) td { background-color: color-mix(in srgb, var(--surface-muted) 50%, transparent); }
+		.article table td.num, .article table th.num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; text-align: right; }
+		.callout { background-color: var(--surface-color); border: 1px solid var(--border-color); border-left: 4px solid var(--primary-color); border-radius: 0 12px 12px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; box-shadow: var(--shadow-soft); }
+		.callout-label { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--primary-color); font-weight: 700; margin-bottom: 0.4rem; }
+		.callout p { margin: 0.3rem 0; font-size: 0.94rem; }
+		.article-end { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--border-color); }
+		.article-end .center-action { margin-top: 1.2rem; }
+		.pill { display: inline-flex; align-items: center; gap: 0.35rem; background-color: var(--primary-soft); color: var(--primary-dark); padding: 0.18rem 0.65rem; border-radius: 999px; font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+		:root[data-theme="dark"] .pill { color: var(--primary-color); }
+		.pill::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; }
+	</style>
+</head>
+
+<body>
+	<header>
+		<div class="container header-inner">
+			<a href="/" class="logo"><img src="/assets/img/logo.png" alt="Cribrum Systems LLC" /></a>
+			<nav>
+				<ul>
+					<li><a href="services">Services</a></li>
+					<li><a href="work">Work</a></li>
+					<li><a href="about">About</a></li>
+					<li><a href="contact" class="contact-button">Contact</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<main class="container">
+		<div class="article-shell">
+
+			<aside class="toc" aria-label="Table of contents">
+				<h2>On this page</h2>
+				<ol>
+					<li><a href="#scope">Scope</a></li>
+					<li><a href="#architecture">Network architecture</a></li>
+					<li><a href="#anchors">Anchor priors</a></li>
+					<li><a href="#parameterization">Box parameterization</a></li>
+					<li><a href="#assignment">Target assignment</a></li>
+					<li><a href="#loss">Loss design</a></li>
+					<li><a href="#nms">Non-maximum suppression</a></li>
+					<li><a href="#upgrades">Modern upgrades</a></li>
+					<li><a href="#ops">Operational characteristics</a></li>
+				</ol>
+			</aside>
+
+			<article class="article">
+
+				<header class="article-header">
+					<div class="article-eyebrow">Project write-up <span class="pill">detection</span></div>
+					<h1>YOLOv3 from scratch in raw PyTorch</h1>
+					<div class="article-meta">
+						<span><strong>Domain</strong> &nbsp; object detection</span>
+						<span><strong>Framework</strong> &nbsp; <code>torch.nn</code> only</span>
+						<span><strong>Result</strong> &nbsp; ~55 COCO mAP@0.5 at 416 input</span>
+					</div>
+					<p class="lede">
+						<strong>The system</strong> is a YOLOv3 detector implemented end to end on
+						<code>torch.nn</code> primitives, with no <code>torchvision.ops</code>, no
+						<code>ultralytics</code>, and no high-level detection framework. Every numerical primitive
+						(IoU variants, NMS, target assignment, loss) is built in-tree, which makes the codebase
+						auditable, easy to ship into restricted dependency environments, and fast to adapt to
+						non-standard variations such as different anchor counts, custom classes, or alternative
+						loss formulations. Performance matches the original paper on COCO at standard input sizes.
+					</p>
+				</header>
+
+				<section id="scope">
+					<h2><span class="section-num">01</span>Scope</h2>
+					<p>
+						YOLOv3 (Redmon &amp; Farhadi, 2018) remains a strong real-time multi-class detector for
+						deployments where SOTA mAP is not required but inference latency, dependency hygiene, and
+						operational simplicity are. The system follows the published architecture and Darknet
+						<code>cfg/yolov3.cfg</code> conventions exactly, with optional flags for two modern
+						upgrades (CIoU loss, mosaic augmentation) that improve mAP at zero inference cost.
+					</p>
+					<p>
+						The implementation is intentionally restricted to <code>torch.nn</code> and
+						<code>torch.autograd</code>. There is no dependence on <code>torchvision.ops</code> for
+						<code>nms</code> or <code>box_iou</code>, no high-level wrappers, and no detection
+						framework. This is a deliberate choice: it makes the code auditable line by line, simplifies
+						deployment into restricted environments (medical, regulated, or air-gapped), and makes
+						adapting the system to non-standard variations straightforward.
+					</p>
+				</section>
+
+				<section id="architecture">
+					<h2><span class="section-num">02</span>Network architecture</h2>
+					<p>
+						The backbone is <strong>Darknet-53</strong>: 52 convolutional layers plus one fully
+						connected head used for ImageNet pretraining. All downsampling is performed by stride-2
+						3&times;3 convolutions rather than max-pool. The five residual stages contain 1, 2, 8, 8,
+						and 4 bottleneck-style blocks (1&times;1 reduce, 3&times;3 expand, identity shortcut). For
+						a 416-pixel input the post-stage spatial sizes are 208, 104, 52, 26, 13.
+					</p>
+					<p>
+						The neck is a hand-designed FPN-style structure with two upsample-and-concat skips. The
+						stride-32 head is built directly from the deepest backbone features, then those features
+						are projected, upsampled, and concatenated with the stride-16 backbone tap to feed the
+						stride-16 head, and the same pattern repeats for stride-8. Each head terminates in a
+						3&times;3 expand and a 1&times;1 prediction convolution emitting
+						<code>3 &middot; (5 + C)</code> channels (three anchor priors, four box parameters, one
+						objectness logit, and C class logits) before being reshaped into the canonical
+						<code>(batch, anchor, height, width, 5 + C)</code> tensor shape.
+					</p>
+
+					<div class="callout">
+						<div class="callout-label">Why this assignment</div>
+						<p>Stride-32 grid cells are large in input pixels, so they only have headroom to localise
+							big objects; the largest priors live there. Stride-8 grid cells are dense and small, so
+							the small priors land there. Each head therefore handles a distinct slice of the
+							object-size distribution.</p>
+					</div>
+				</section>
+
+				<section id="anchors">
+					<h2><span class="section-num">03</span>Anchor priors</h2>
+					<p>
+						The system ships with the nine COCO anchors from the paper at 416-pixel reference, sorted
+						ascending by area and split into three groups of three across the three heads. For
+						non-COCO datasets the anchors are re-clustered from the training-split GT boxes using
+						<strong>k-means with IoU distance</strong> rather than Euclidean distance on
+						<code>(width, height)</code>. Euclidean has scale variance that lets large boxes dominate
+						the clustering loss; the IoU-based formulation reduces to a closed-form intersection of two
+						origin-centered rectangles and avoids that pathology.
+					</p>
+					<p>
+						The diagnostic for any anchor set is the mean IoU between every training box and its
+						assigned cluster; the published paper reports approximately 67% on COCO with k=9. Anchors
+						must be clustered <em>after</em> letterbox in input-pixel units, otherwise the clustering
+						operates on the wrong distribution and the resulting priors miscalibrate the entire
+						training run.
+					</p>
+				</section>
+
+				<section id="parameterization">
+					<h2><span class="section-num">04</span>Box parameterization</h2>
+					<p>
+						YOLOv3 predicts four raw scalars per anchor per cell. Decoding to a real box uses
+						<strong>sigmoid on the center offsets and exponential on the size deltas</strong>. The
+						center is constrained to lie inside the responsible grid cell (sigmoid maps the raw logit
+						into <code>[0, 1)</code>); the width and height grow multiplicatively around the anchor
+						prior (exponential gives unbounded positive scaling). Without sigmoid on the center, the
+						network can place a center arbitrarily far from its anchor's cell, breaking the assignment
+						invariant and producing chaotic gradients early in training.
+					</p>
+					<p>
+						The system tracks three coordinate spaces explicitly: the sub-cell offset space where
+						training targets live, the grid-cell units of each head where decoded boxes are computed
+						and IoU is evaluated against ground truth, and the input-pixel space at network input. To
+						recover original-image coordinates, the inverse-letterbox transform is applied: subtract
+						pad, divide by scale, then clip to the original image bounds. The order matters; reversing
+						it shifts predictions by a sub-pixel offset that is invisible on square images and breaks
+						evaluation on rectangular ones.
+					</p>
+				</section>
+
+				<section id="assignment">
+					<h2><span class="section-num">05</span>Target assignment</h2>
+					<p>
+						For each ground-truth box, the system computes IoU between its width and height and all
+						nine anchors treated as origin-centered rectangles. The single best-IoU anchor is the
+						<strong>positive</strong>: the anchor whose head, scale, and grid cell are responsible for
+						predicting that GT. All other anchors at the same cell whose IoU with the GT exceeds an
+						ignore threshold are <strong>ignored</strong>: they contribute neither to the
+						no-objectness loss nor to the localization or classification loss. Everything else is
+						<strong>negative</strong> and contributes to the no-objectness term only.
+					</p>
+					<p>
+						The three-way split is critical. Without an ignore band, near-correct predictions at
+						unassigned anchors are pushed down by the no-objectness loss while the correct prediction
+						gets pulled up by the localization loss, producing fighting gradients at exactly the same
+						visual location. The ignore mask resolves the conflict cleanly.
+					</p>
+					<p>
+						Original YOLOv3 enforces one positive per ground-truth box; modern variants (YOLOv5+) relax
+						this with multi-anchor or multi-cell matching to densify supervision. The system follows
+						the original convention with a flag to enable the relaxed variant when training data is
+						sparse.
+					</p>
+				</section>
+
+				<section id="loss">
+					<h2><span class="section-num">06</span>Loss design</h2>
+					<p>
+						The total loss combines three streams: a localization term over positive anchors only, an
+						objectness term split into pos and neg streams with separate weights, and a per-class
+						BCE-with-logits classification term over positive anchors only. Per-class BCE rather than
+						softmax is the paper's key independence assumption: a single box can carry multiple labels
+						(<em>Person</em> and <em>Woman</em>, for example), and softmax would force the model to
+						commit to one.
+					</p>
+					<p>
+						The objectness imbalance is severe. A 13&times;13 head has 1,521 anchor cells per image, of
+						which typically fewer than ten are positive. A naive single-mean BCE drowns the positives
+						in negatives and converges to an all-zero objectness predictor. Splitting pos and neg
+						streams with separate per-stream means and an explicit lambda re-weighting fixes this; the
+						ignored-cell mask further removes the borderline cases that would otherwise produce
+						fighting gradients.
+					</p>
+
+					<div class="callout">
+						<div class="callout-label">Two regression formulations</div>
+						<p><strong>Paper-faithful:</strong> MSE on the four box parameters with a
+							<code>(2 &minus; w&middot;h)</code> per-box scale factor that up-weights small boxes,
+							matching the original Darknet C implementation.</p>
+						<p><strong>Modern (default):</strong> Complete-IoU loss on decoded boxes. CIoU adds a
+							center-distance penalty normalized by the enclosing-box diagonal and an aspect-ratio
+							consistency term to the standard IoU. The paper-prescribed detail is to detach the
+							aspect-ratio scaling from autograd so gradient flows through the geometric terms only.
+							CIoU is scale-aware and gains 1 to 2 mAP over MSE on COCO at zero inference cost.</p>
+					</div>
+
+					<p>
+						The system ships with both formulations behind a flag. Default is CIoU. The MSE path is
+						retained for exact paper reproduction and as a debugging baseline.
+					</p>
+				</section>
+
+				<section id="nms">
+					<h2><span class="section-num">07</span>Non-maximum suppression</h2>
+					<p>
+						Three NMS variants are provided and selectable per deployment:
+					</p>
+					<ul>
+						<li><strong>Per-class greedy NMS.</strong> The COCO standard. Two distinct objects of
+							different classes can legitimately overlap (a person riding a horse, a cup on a desk),
+							and per-class NMS preserves both correctly.</li>
+						<li><strong>Class-agnostic greedy NMS.</strong> Preferred when downstream consumers treat
+							all detections symmetrically (crowd counting, generic foreground masking).</li>
+						<li><strong>Soft-NMS</strong> (Bodla et al., 2017) with linear or Gaussian decay. Decays
+							scores rather than zeroing them; the Gaussian variant is parameter-light and gains
+							roughly +1 to 1.3 mAP on COCO over hard NMS without retraining.</li>
+					</ul>
+					<p>
+						All three operate in input-pixel space after the inverse-letterbox transform and are
+						implemented with vectorised IoU rather than nested loops; the only Python-level loop
+						iterates one survivor at a time, computing IoU against the entire remaining tail in a
+						single tensor op. At typical pre-NMS counts of a few hundred boxes per image after
+						confidence filtering, this scales fine.
+					</p>
+				</section>
+
+				<section id="upgrades">
+					<h2><span class="section-num">08</span>Modern upgrades</h2>
+					<p>
+						Two modern additions are available behind flags, both replacing original choices with
+						drop-in upgrades that have no inference-time cost.
+					</p>
+					<p>
+						<strong>CIoU loss</strong> replaces MSE-on-box-parameters as the default localization
+						term. It adds a center-distance penalty and an aspect-ratio consistency term to standard
+						IoU, is scale-aware via the enclosing-box diagonal normalization, and is the single
+						highest-leverage improvement over the paper. Reliable +1 to 2 mAP on COCO.
+					</p>
+					<p>
+						<strong>Mosaic augmentation</strong> (introduced in YOLOv4) samples four images, places
+						each into a quadrant of a canvas of double the input size with random crop placement, and
+						resizes the canvas back to the input size for training. The augmentation transforms ground
+						truth alongside the image and drops boxes that shrink below a minimum area. Mosaic
+						especially benefits the stride-8 head's small-object recall, since the four-way crop puts
+						many small instances at varied scales into a single training sample.
+					</p>
+					<p>
+						The training schedule itself follows <code>cfg/yolov3.cfg</code>: SGD with momentum 0.9
+						and weight decay 5e-4, base learning rate 1e-3, batch 64, polynomial-power-4 burn-in for
+						the first 1,000 iterations, step decay at 400 k and 450 k, total 500 k iterations, with
+						optional cosine decay as a modern alternative. Multi-scale training resamples the input
+						resolution to a random multiple of 32 in <code>[320, 608]</code> every 10 batches, which
+						produces a model robust across the inference resolutions that real deployments actually
+						use.
+					</p>
+				</section>
+
+				<section id="ops">
+					<h2><span class="section-num">09</span>Operational characteristics</h2>
+					<p>
+						With ImageNet-pretrained Darknet-53 weights, COCO mAP@0.5 lands at approximately 55 at
+						416-pixel input and 57 to 58 at 608-pixel input, matching the original paper. Without
+						pretraining, the model still trains from random initialization but adds roughly 30 to 50
+						epochs of convergence time and typically loses 2 to 3 mAP. Pretraining the Darknet-53
+						backbone as an ImageNet classifier first, then loading those weights into the detector
+						with the head and neck initialised from random, is the standard recipe and is supported
+						out of the box.
+					</p>
+					<p>
+						The whole codebase is intentionally compact, roughly 500 lines of <code>torch.nn</code>,
+						and depends only on the standard PyTorch + NumPy + OpenCV stack for image IO, letterbox,
+						and Poisson-blend operations. There is no detection-specific dependency anywhere in the
+						tree, which makes the system straightforward to deploy into restricted environments and
+						easy to adapt for non-standard class counts, alternative anchor sets, or single-class
+						single-shot variants.
+					</p>
+				</section>
+
+				<section class="article-end">
+					<h3>Summary</h3>
+					<p>
+						YOLOv3 is a clean compositional artifact: a fully convolutional backbone, a hand-designed
+						FPN-style neck with two upsample-and-concat skips, three prediction heads, anchor priors
+						clustered with IoU distance, decoded through sigmoid-on-center and exponential-on-size,
+						supervised by a three-stream loss with a tri-state assignment mask, and post-processed by
+						greedy per-class NMS. The system delivers each of these components on
+						<code>torch.nn</code> primitives only, with optional CIoU and mosaic upgrades, and matches
+						the original paper's COCO numbers at standard input sizes.
+					</p>
+
+					<div class="center-action btn-group">
+						<a href="work" class="btn">Back to Selected Work</a>
+						<a href="contact" class="btn">Discuss this work</a>
+					</div>
+				</section>
+
+			</article>
+		</div>
+	</main>
+
+	<footer>
+		<div class="container footer-inner">
+			<div>
+				<p>&copy; 2026 Cribrum Systems LLC.</p>
+				<p>Powered by open source and coffee.</p>
+			</div>
+			<div>
+				<p>
+					<a href="https://github.com/cribrum-systems" target="_blank" rel="noopener noreferrer">GitHub</a> |
+					<a href="https://www.linkedin.com/company/cribrum" target="_blank"
+						rel="noopener noreferrer">LinkedIn</a>
+					|
+					<a href="privacy">Privacy</a>
+				</p>
+			</div>
+		</div>
+	</footer>
+	<script type="module" src="assets/js/main.js"></script>
+</body>
+
+</html>

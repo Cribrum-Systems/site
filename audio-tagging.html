@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Multi-label audio tagging on 4&times; V100 - Cribrum Systems LLC</title>
+	<meta name="description"
+		content="A from-scratch CNN-based multi-label audio tagger trained on AudioSet and finetuned on a unified label space spanning FSD50K, VGGSound, VocalSound, and Nonspeech7k. AudioSet eval mAP at parity with the published PANNs reference." />
+	<meta name="author" content="Itamar Oren-Naftalovich" />
+	<meta name="robots" content="index, follow" />
+	<meta name="theme-color" content="#0a9396" />
+	<link rel="canonical" href="https://cribrum.dev/audio-tagging" />
+	<meta property="og:type" content="article" />
+	<meta property="og:site_name" content="Cribrum Systems LLC" />
+	<meta property="og:title" content="Multi-label audio tagging on 4&times; V100" />
+	<meta property="og:description"
+		content="From-scratch multi-label audio tagger spanning AudioSet, FSD50K, VGGSound, VocalSound, and Nonspeech7k." />
+	<meta property="og:url" content="https://cribrum.dev/audio-tagging" />
+	<meta property="og:image" content="https://cribrum.dev/assets/img/logo.png" />
+	<meta property="og:image:alt" content="Cribrum Systems LLC logo" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Multi-label audio tagging on 4&times; V100" />
+	<meta name="twitter:description"
+		content="From-scratch multi-label audio tagger spanning AudioSet, FSD50K, VGGSound, VocalSound, and Nonspeech7k." />
+	<meta name="twitter:image" content="https://cribrum.dev/assets/img/logo.png" />
+	<meta name="twitter:image:alt" content="Cribrum Systems LLC logo" />
+	<link rel="icon" href="/assets/img/logo-with-bk.png" type="image/png" />
+	<link rel="stylesheet" href="assets/css/styles.css" />
+	<style>
+		.article-shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); margin-top: 1.6rem; }
+		@media (min-width: 1080px) { .article-shell { grid-template-columns: 240px minmax(0, 1fr); align-items: flex-start; } }
+		.toc { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.1rem 1.15rem; box-shadow: var(--shadow-soft); font-size: 0.88rem; }
+		@media (min-width: 1080px) { .toc { position: sticky; top: 92px; max-height: calc(100vh - 110px); overflow-y: auto; } }
+		.toc h2 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 0.7rem; }
+		.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc-counter; }
+		.toc li { counter-increment: toc-counter; padding: 0.18rem 0; border-left: 2px solid transparent; padding-left: 0.6rem; margin-left: -0.6rem; transition: border-color 0.18s ease, background-color 0.18s ease; }
+		.toc li:hover { border-left-color: var(--primary-color); background-color: var(--surface-muted); }
+		.toc a { color: var(--text-color); display: block; }
+		.toc a::before { content: counter(toc-counter, decimal-leading-zero); color: var(--primary-color); font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; margin-right: 0.55rem; letter-spacing: 0.04em; }
+		.toc a:hover { color: var(--primary-color); }
+		.article { min-width: 0; max-width: 760px; }
+		.article-header { border-bottom: 1px solid var(--border-color); padding-bottom: 1.6rem; margin-bottom: 2rem; }
+		.article-eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 1rem; }
+		.article-eyebrow::before { content: ""; width: 1.6rem; height: 2px; background-color: var(--primary-color); }
+		.article h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.18; margin-bottom: 0.9rem; }
+		.article-meta { display: flex; flex-wrap: wrap; gap: 0.8rem 1.4rem; font-size: 0.85rem; color: var(--text-muted); font-family: "IBM Plex Mono", monospace; }
+		.article-meta span strong { color: var(--text-color); font-weight: 600; }
+		.article .lede { background-color: var(--surface-muted); border-left: 3px solid var(--primary-color); padding: 1.1rem 1.25rem; border-radius: 0 12px 12px 0; font-size: 1.02rem; line-height: 1.7; margin: 1.6rem 0 0; }
+		.article .lede strong { color: var(--text-color); }
+		.article section { margin-top: 3rem; scroll-margin-top: 96px; }
+		.article section h2 { text-align: left; font-size: clamp(1.35rem, 2.6vw, 1.7rem); line-height: 1.25; margin-bottom: 0.4rem; padding-top: 0.4rem; border-top: 1px solid var(--border-color); padding-block-start: 1.6rem; }
+		.article section h2 .section-num { font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; color: var(--primary-color); margin-right: 0.6rem; letter-spacing: 0.08em; }
+		.article h3 { font-size: 1.08rem; margin: 1.5rem 0 0.4rem; color: var(--text-color); }
+		.article p { margin: 0.85rem 0; line-height: 1.7; }
+		.article ul, .article ol { margin: 0.7rem 0 0.9rem 1.4rem; }
+		.article li { margin: 0.35rem 0; line-height: 1.6; }
+		.article a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--primary-color) 40%, transparent); text-underline-offset: 3px; }
+		.article a:hover { text-decoration-color: var(--primary-color); }
+		.article strong { color: var(--text-color); }
+		.article .table-wrap { overflow-x: auto; margin: 1rem 0 1.4rem; border: 1px solid var(--border-color); border-radius: 12px; }
+		.article table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+		.article table th, .article table td { padding: 0.65rem 0.85rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+		.article table th { background-color: var(--surface-muted); font-weight: 600; font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+		.article table tbody tr:last-child td { border-bottom: none; }
+		.article table tbody tr:nth-child(even) td { background-color: color-mix(in srgb, var(--surface-muted) 50%, transparent); }
+		.article table td.num, .article table th.num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; text-align: right; }
+		.callout { background-color: var(--surface-color); border: 1px solid var(--border-color); border-left: 4px solid var(--primary-color); border-radius: 0 12px 12px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; box-shadow: var(--shadow-soft); }
+		.callout-label { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--primary-color); font-weight: 700; margin-bottom: 0.4rem; }
+		.callout p { margin: 0.3rem 0; font-size: 0.94rem; }
+		.article-end { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--border-color); }
+		.article-end .center-action { margin-top: 1.2rem; }
+		.pill { display: inline-flex; align-items: center; gap: 0.35rem; background-color: var(--primary-soft); color: var(--primary-dark); padding: 0.18rem 0.65rem; border-radius: 999px; font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+		:root[data-theme="dark"] .pill { color: var(--primary-color); }
+		.pill::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; }
+	</style>
+</head>
+
+<body>
+	<header>
+		<div class="container header-inner">
+			<a href="/" class="logo"><img src="/assets/img/logo.png" alt="Cribrum Systems LLC" /></a>
+			<nav>
+				<ul>
+					<li><a href="services">Services</a></li>
+					<li><a href="work">Work</a></li>
+					<li><a href="about">About</a></li>
+					<li><a href="contact" class="contact-button">Contact</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<main class="container">
+		<div class="article-shell">
+
+			<aside class="toc" aria-label="Table of contents">
+				<h2>On this page</h2>
+				<ol>
+					<li><a href="#scope">Scope</a></li>
+					<li><a href="#datasets">Datasets and label space</a></li>
+					<li><a href="#architecture">Architecture choice</a></li>
+					<li><a href="#training">Training and loss design</a></li>
+					<li><a href="#ssl">Why not SSL pretraining</a></li>
+					<li><a href="#vocal">Human-vocal events</a></li>
+					<li><a href="#ops">Operational characteristics</a></li>
+				</ol>
+			</aside>
+
+			<article class="article">
+
+				<header class="article-header">
+					<div class="article-eyebrow">Project write-up <span class="pill">audio</span></div>
+					<h1>Multi-label audio tagging on 4&times; V100</h1>
+					<div class="article-meta">
+						<span><strong>Domain</strong> &nbsp; multi-label audio classification</span>
+						<span><strong>Hardware</strong> &nbsp; 4&times; V100-SXM2-32GB</span>
+						<span><strong>Result</strong> &nbsp; AudioSet mAP at parity with PANNs (0.431)</span>
+					</div>
+					<p class="lede">
+						<strong>The system</strong> is a from-scratch CNN-based multi-label audio tagger trained on
+						AudioSet-unbalanced and jointly finetuned on a unified label space spanning AudioSet,
+						FSD50K, VGGSound, VocalSound, and Nonspeech7k. It runs on a 4&times; V100-SXM2-32GB node
+						and reaches AudioSet eval mAP at parity with the published PANNs CNN14 reference (0.431),
+						with strong per-class AP on a target set of human-vocal events including cough, sneeze,
+						laughter, baby cry, snoring, footsteps, breathing, and clapping. The training pipeline runs
+						end to end in 5 to 7 wall-clock days, versus the 5 to 6 weeks an SSL alternative such as
+						BEATs would consume on the same hardware.
+					</p>
+				</header>
+
+				<section id="scope">
+					<h2><span class="section-num">01</span>Scope</h2>
+					<p>
+						The target capability is robust multi-label tagging across an open vocabulary of acoustic
+						events, with particular emphasis on human-vocal sounds that downstream consumers care about
+						most. The hardware budget (4&times; V100-SXM2-32GB) is half what the original PANNs CNN14
+						release used and roughly an order of magnitude below what current SSL-frontier work assumes.
+						The design therefore commits firmly to from-scratch supervised training rather than chasing
+						the SSL leaderboard, and recovers competitive numbers through careful loss, sampling, and
+						label-space engineering.
+					</p>
+					<p>
+						The system builds on prior in-house work, namely a from-scratch ResNet-18 baseline for the
+						ESC-50 benchmark that reaches roughly 83% mean accuracy across the official 5-fold split.
+						The log-mel frontend (32 kHz, 128 mel bins, hop 320), energy-preserving waveform mixup, EMA
+						with batch-norm refresh, and the careful fp32 wrapping of the spectrogram path all carry
+						over directly into the larger system.
+					</p>
+				</section>
+
+				<section id="datasets">
+					<h2><span class="section-num">02</span>Datasets and label space</h2>
+					<p>
+						AudioSet, FSD50K, and VGGSound are the three corpora that anchor any serious 2026 audio
+						tagger. The system uses all three plus VocalSound and Nonspeech7k, with the careful
+						observation that <strong>VGGSound is single-positive-label</strong>: most clips contain
+						unannotated positives for other classes. Treating those unlabeled classes as confirmed
+						negatives systematically degrades per-class precision; the system instead carries a
+						<strong>don't-care mask</strong> on VGGSound rows, masking unlabeled classes out of the loss
+						entirely.
+					</p>
+					<p>
+						The three taxonomies do not naively share a common space. AudioSet's 632-node hierarchical
+						ontology (527 used) is the natural superset; FSD50K's 200 classes map cleanly onto AudioSet
+						MIDs; VGGSound's flat 309-class taxonomy requires a manually curated mapping that splits
+						into four buckets:
+					</p>
+					<ul>
+						<li>Direct leaf match (~150 classes): &quot;dog barking&quot; maps to AudioSet
+							<em>Bark</em>.</li>
+						<li>Coarsened leaf (~70): VGGSound's verb-ful classes such as &quot;playing electric
+							guitar&quot; map to AudioSet's instrument leaf <em>Electric guitar</em> after dropping the
+							action.</li>
+						<li>Intermediate-only (~50): VGGSound's &quot;baby laughing&quot; folds into AudioSet's
+							<em>Laughter</em> ancestor when no fine-grained leaf exists.</li>
+						<li>No equivalent (~30): fine-grained animals (sea lion, orca) absent from AudioSet are added
+							as additional columns or folded into <em>Animal</em>.</li>
+					</ul>
+					<p>
+						The mapping is anchored on the SALT taxonomy (Stamatiadis et al. 2024), which aligns 24+
+						tagging datasets under one schema, and combined with <strong>Hierarchical Label
+						Propagation</strong> (Tuncay et al., ICASSP 2025): every positive leaf is propagated up the
+						AudioSet DAG, lifting the mean labels-per-clip from 1.98 to 2.39 and consistently improving
+						mAP on multiple architectures. HLP is essential when mixing leaf-only VGGSound with
+						multi-level AudioSet without it, the model receives systematically inconsistent supervision.
+					</p>
+					<p>
+						License posture is conservative: FSD50K is unambiguously redistributable under CC-BY;
+						AudioSet is consumed by ID list with audio scraped or sourced from public dataset mirrors
+						and validated against the original CSV manifests; VGGSound audio is scraped from YouTube
+						against the released CSV; VocalSound and Nonspeech7k are obtained from their respective
+						release pages.
+					</p>
+				</section>
+
+				<section id="architecture">
+					<h2><span class="section-num">03</span>Architecture choice</h2>
+					<p>
+						Three families of model were evaluated against the constraint of no ImageNet weights, no
+						SSL pretraining, and no distillation from a pretrained teacher. The from-scratch supervised
+						column is the only one that matters for this hardware budget:
+					</p>
+
+					<div class="table-wrap">
+						<table>
+							<thead>
+								<tr>
+									<th>Model</th>
+									<th class="num">Params</th>
+									<th class="num">From-scratch AS mAP</th>
+									<th>Verdict</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><strong>PANNs CNN14</strong></td>
+									<td class="num">80.7 M</td>
+									<td class="num"><strong>0.431</strong></td>
+									<td>Selected. The recipe.</td>
+								</tr>
+								<tr>
+									<td>Wavegram-Logmel-CNN</td>
+									<td class="num">~81 M</td>
+									<td class="num">0.439</td>
+									<td>Backup; +0.008 mAP at +10% compute.</td>
+								</tr>
+								<tr>
+									<td>ConvNeXt-AT</td>
+									<td class="num">~28 M</td>
+									<td class="num">~0.448</td>
+									<td>Best modern-CNN result. Optional upgrade at smaller param count.</td>
+								</tr>
+								<tr>
+									<td>AST</td>
+									<td class="num">87 M</td>
+									<td class="num">~0.366</td>
+									<td>Catastrophic without ImageNet. Disqualified.</td>
+								</tr>
+								<tr>
+									<td>HTS-AT, PaSST-S</td>
+									<td class="num">31 to 86 M</td>
+									<td class="num">~0.42 to 0.44</td>
+									<td>No win over CNN14 from scratch; higher per-step cost.</td>
+								</tr>
+								<tr>
+									<td>BEATs / EAT / Dasheng / CED</td>
+									<td class="num">86 to 1200 M</td>
+									<td class="num">0.486 to 0.506 with SSL/distill</td>
+									<td>Unreachable on 4&times; V100 in any reasonable time budget.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<p>
+						Every transformer architecture loses 0.04 to 0.08 mAP in the from-scratch regime relative to
+						its ImageNet-pretrained number. Every SSL recipe assumes either 16+ V100 for weeks or a
+						teacher ensemble that itself depends on ImageNet. CNN14 is the rational choice; the
+						optional upgrade path is ConvNeXt-AT for the same-or-better mAP at a third the parameters.
+					</p>
+				</section>
+
+				<section id="training">
+					<h2><span class="section-num">04</span>Training and loss design</h2>
+					<p>
+						Three engineering decisions account for most of the gap between a naive baseline and
+						competitive numbers:
+					</p>
+					<ol>
+						<li><strong>Class-uniform sampling.</strong> AudioSet's head-to-tail ratio is roughly
+							15,000 to 1: <em>Music</em> and <em>Speech</em> each dominate ~40% of clips while tail
+							classes appear in tens. The PANNs sampler picks a class uniformly, then a clip from that
+							class uniformly; the clip retains its full multi-hot target. This alone produces a ~3 mAP
+							gap over random clip sampling on AudioSet.</li>
+						<li><strong>Asymmetric Loss</strong> (Ridnik et al. 2021) replaces vanilla BCE. AudioSet has a
+							99.6% per-clip negative rate; ASL applies different focal exponents to positives and
+							negatives and probability-shifts easy negatives below a small margin to zero gradient,
+							which is exactly the right inductive bias for this imbalance regime. ASL outperforms
+							class-balanced focal, pos-weighted BCE, and plain BCE by 1 to 3 mAP across multiple DCASE
+							entries.</li>
+						<li><strong>Convex multi-hot mixup.</strong> Energy-preserving waveform mixup is paired with a
+							convex combination of multi-hot targets (matching PANNs and PaSST), not with the
+							set-union variant. The convex formulation correctly reflects that a mixed clip contains
+							each event at fractional intensity, not at full intensity.</li>
+					</ol>
+					<p>
+						SpecAugment runs on the spectrogram with independent (per-sample) frequency and time masks,
+						not the deceptively-named &quot;iid&quot; default that uses the same mask coordinates across
+						the whole batch. EMA of model weights is maintained for evaluation, with a batch-norm
+						refresh pass before each evaluation so the EMA model's running statistics match its
+						parameters. The mel frontend executes in fp32 inside an autocast-disabled scope while the
+						convolutional trunk runs in fp16, because fp16 squaring of small magnitudes underflows and
+						corrupts the subsequent log step.
+					</p>
+				</section>
+
+				<section id="ssl">
+					<h2><span class="section-num">05</span>Why not SSL pretraining</h2>
+					<p>
+						Self-supervised audio pretraining is the headline frontier in 2025 to 2026, with SSLAM,
+						BEATs, EAT, CED, and Dasheng all reporting AudioSet mAP at or above 0.486. None of these
+						are reachable on a 4&times; V100 budget in a useful timeframe.
+					</p>
+					<p>
+						The published BEATs procedure used 16&times; V100-SXM2-32GB for ~75 hours per iteration,
+						with three iterations and additional tokenizer-training rounds, totaling roughly 3,600
+						V100-hours. On 4&times; V100 that is ~12.5 wall-clock days <em>per iteration</em> and
+						5 to 6 weeks for the full procedure. Audio-MAE used 64&times; V100 for 36 hours, mapping to
+						~24 wall-clock days on 4&times; V100. EAT is the cheapest credible SSL recipe and still
+		                takes longer than supervised CNN14 while requiring careful replication of the data2vec 2.0
+						inverse-block-mask machinery to converge to its quoted number.
+					</p>
+
+					<div class="callout">
+						<div class="callout-label">Decision</div>
+						<p>The supervised CNN14 pipeline reaches 0.431 mAP in 5 to 7 days. The features it learns
+							transfer cleanly to ESC-50, FSD50K, VGGSound, and downstream finetuning. There is no SSL
+							recipe that delivers a usable win inside this hardware envelope.</p>
+					</div>
+				</section>
+
+				<section id="vocal">
+					<h2><span class="section-num">06</span>Human-vocal events</h2>
+					<p>
+						The target class set (laughter, cough, sneeze, baby cry, snoring, footsteps, clapping,
+						breathing, throat clearing, sniff, yawn) lives almost entirely in the AudioSet
+						<code>Human sounds</code> subtree under five children: human voice, respiratory sounds,
+						human locomotion, hand sounds, and human group actions. <strong>Yawn is not a leaf class
+						anywhere in AudioSet</strong>; the closest siblings are sigh, pant, and gasp.
+					</p>
+					<p>
+						AudioSet alone is starved for several of these classes. Throat clearing, for example, has
+						355 clips in AudioSet versus 3,504 in <strong>VocalSound</strong> (Gong, Yu, Glass, ICASSP
+						2022): 21,024 clips from 3,365 unique speakers covering laughter, sigh, cough, throat
+						clearing, sneeze, and sniff at roughly 3,500 clips per class. The published paper reports a
+						relative +41.9% improvement in vocal-class precision when VocalSound is added to FSD50K
+						training. The system co-trains on VocalSound with AudioSet and FSD50K rather than
+						training on it alone, since VocalSound clips are acted on Mechanical Turk and the
+						in-the-wild distribution is preserved by the larger corpora.
+					</p>
+					<p>
+						<strong>Nonspeech7k</strong> (Rashid et al., 2023) closes the yawn gap with a 7-class corpus
+						(breathing, cough, cry, laugh, scream, sneeze, yawn) of roughly 6,300 clips. The
+						<strong>Donate-a-Cry</strong> corpus contributes ~1,128 dedicated baby-cry clips beyond
+						AudioSet's noisier class. ESC-50's 10-class &quot;Human, non-speech sounds&quot; group is
+						held out as a class-specific sanity check rather than included in training, since
+						40 clips per class is too small to influence a 2 M-clip run but is well-suited to
+						per-class diagnostics.
+					</p>
+				</section>
+
+				<section id="ops">
+					<h2><span class="section-num">07</span>Operational characteristics</h2>
+					<p>
+						The full pipeline runs in two stages. Stage 1 is supervised pretraining on
+						AudioSet-unbalanced for 600 k iterations at effective batch 256 (64 per GPU on 4 GPUs)
+						with AdamW, cosine learning-rate schedule, and a 10-epoch warmup. Stage 2 is joint
+						finetuning on the unified label space combining AudioSet-balanced, FSD50K-dev,
+						VGGSound-train, VocalSound, and Nonspeech7k for 30 to 50 epochs at a reduced learning rate.
+					</p>
+					<p>
+						NCCL all-reduce on ~80 M fp16 parameters fully overlaps with the backward pass on NVLink-
+						SXM2 V100; observed scaling efficiency is 95 to 97% and the bottleneck is data IO rather
+						than compute. Mel features are precomputed offline and served from HDF5 shards on
+						Gen4 NVMe. At sustained 8 GB/s of mel data per second, a single PCIe Gen3 NVMe is
+						insufficient and a SATA SSD will collapse GPU utilisation to 30 to 40%; the production
+						setup uses Gen4 NVMe in RAID-0 or rides the Linux page cache on a high-RAM host after the
+						first epoch warms it.
+					</p>
+					<p>
+						End-to-end Stage-1 wall clock is 5 to 7 days, including ~10 to 15% data-loader overhead.
+						Stage 2 adds roughly one further day. Evaluation reports per-class AP on AudioSet eval,
+						FSD50K eval, VocalSound eval, and the ESC-50 Human-sounds 10-class hold-out as the standard
+						monitoring suite, alongside the headline mAP and AUC numbers.
+					</p>
+				</section>
+
+				<section class="article-end">
+					<h3>Summary</h3>
+					<p>
+						A from-scratch supervised CNN, trained with PANNs-style class-uniform sampling and
+						Asymmetric Loss on AudioSet-unbalanced and jointly finetuned on a SALT-unified label space
+						with VocalSound and Nonspeech7k, reaches AudioSet eval mAP at parity with the published
+						0.431 reference and delivers strong per-class AP on the human-vocal target set, in 5 to 7
+						wall-clock days on 4&times; V100. The non-obvious wins are SALT plus Hierarchical Label
+						Propagation for clean cross-dataset label fusion, ASL over plain BCE for the extreme
+						negative imbalance, the don't-care mask for VGGSound's single-positive-label semantics, and
+						VocalSound as a per-class data-volume booster on six of the eleven target events.
+					</p>
+
+					<div class="center-action btn-group">
+						<a href="work" class="btn">Back to Selected Work</a>
+						<a href="contact" class="btn">Discuss this work</a>
+					</div>
+				</section>
+
+			</article>
+		</div>
+	</main>
+
+	<footer>
+		<div class="container footer-inner">
+			<div>
+				<p>&copy; 2026 Cribrum Systems LLC.</p>
+				<p>Powered by open source and coffee.</p>
+			</div>
+			<div>
+				<p>
+					<a href="https://github.com/cribrum-systems" target="_blank" rel="noopener noreferrer">GitHub</a> |
+					<a href="https://www.linkedin.com/company/cribrum" target="_blank"
+						rel="noopener noreferrer">LinkedIn</a>
+					|
+					<a href="privacy">Privacy</a>
+				</p>
+			</div>
+		</div>
+	</footer>
+	<script type="module" src="assets/js/main.js"></script>
+</body>
+
+</html>

@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>Work - Cribrum Systems LLC</title>
 	<meta name="description"
-		content="Selected case studies from ION606 covering backend infrastructure, Kubernetes-focused systems, and applied machine learning workflows." />
+		content="Selected projects from Cribrum Systems LLC: from-scratch deep learning systems covering audio tagging, object detection, and OCR." />
 	<meta name="author" content="Itamar Oren-Naftalovich" />
 	<meta name="robots" content="index, follow" />
 	<meta name="theme-color" content="#0a9396" />
@@ -15,18 +15,18 @@
 	<meta property="og:site_name" content="Cribrum Systems LLC" />
 	<meta property="og:title" content="Work - Cribrum Systems LLC" />
 	<meta property="og:description"
-		content="Case studies that highlight practical delivery in backend engineering, container orchestration, and ML systems." />
+		content="Production deep learning systems built from scratch in raw PyTorch." />
 	<meta property="og:url" content="https://cribrum.dev/work" />
 	<meta property="og:image" content="https://cribrum.dev/assets/img/logo.png" />
-	<meta property="og:image:alt" content="ION606 logo" />
+	<meta property="og:image:alt" content="Cribrum Systems LLC logo" />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Work - Cribrum Systems LLC" />
 	<meta name="twitter:description"
-		content="Case studies that highlight practical delivery in backend engineering, container orchestration, and ML systems." />
+		content="Production deep learning systems built from scratch in raw PyTorch." />
 	<meta name="twitter:image" content="https://cribrum.dev/assets/img/logo.png" />
-	<meta name="twitter:image:alt" content="ION606 logo" />
+	<meta name="twitter:image:alt" content="Cribrum Systems LLC logo" />
 	<link rel="icon" href="/assets/img/logo-with-bk.png" type="image/png" />
 	<link rel="stylesheet" href="assets/css/styles.css" />
 </head>
@@ -39,7 +39,6 @@
 				<ul>
 					<li><a href="services">Services</a></li>
 					<li><a href="work">Work</a></li>
-					<li><a href="projects">Projects</a></li>
 					<li><a href="about">About</a></li>
 					<li><a href="contact" class="contact-button">Contact</a></li>
 				</ul>
@@ -49,95 +48,115 @@
 	<main class="container">
 		<h1 class="page-title">Selected Work</h1>
 		<p class="page-intro">
-			These case studies highlight delivery across backend infrastructure,
-			container orchestration, and complex machine learning pipelines.
-			Code is published on <a href="https://git.ion606.com/ION606" target="_blank"
-				rel="noopener noreferrer">git.ion606.com</a> and <a href="https://github.com/ION606" target="_blank"
-				rel="noopener noreferrer">GitHub</a>.
+			Production deep learning systems built from scratch in raw PyTorch. Each entry below is a
+			working system; the linked write-ups summarise the technical scope, design decisions, and
+			operational characteristics for technical reviewers.
 		</p>
 
 		<section>
-			<h2>Encrypted Kubernetes Messages</h2>
+			<h2>Multi-label audio tagging on 4&times; V100</h2>
 			<div class="grid grid-cols-2">
 				<div class="stack-sm">
-					<p><strong>Problem:</strong> Service-to-service messaging inside Kubernetes often includes sensitive
-						payloads, but ad-hoc encryption approaches are easy to get wrong and hard to operationalize.</p>
-					<p><strong>Solution:</strong> I built a reference implementation that explores end-to-end encrypted
-						message exchange for Kubernetes workloads, focusing on practical integration points and
-						reproducible demos.</p>
-					<p><strong>Results:</strong> The project provides a concrete starting point for evaluating key
-						management, authenticated encryption, and operational tradeoffs in secure in-cluster
-						communication.</p>
+					<p><strong>Problem:</strong> identify and label arbitrary acoustic events, including subtle
+						human-vocal sounds (cough, sneeze, laughter, baby cry, snoring, footsteps, breathing,
+						clapping), in unconstrained recordings, on a constrained 4&times; V100 budget that rules
+						out the modern self-supervised frontier.</p>
+					<p><strong>Solution:</strong> a from-scratch CNN backbone (PANNs CNN14 lineage) trained with
+						class-uniform sampling and Asymmetric Loss on AudioSet-unbalanced, then jointly finetuned on
+						a unified label space spanning AudioSet, FSD50K, VGGSound, VocalSound, and Nonspeech7k. A
+						don't-care mask handles VGGSound's single-positive-label semantics; Hierarchical Label
+						Propagation harmonises leaf-only and multi-level taxonomies.</p>
+					<p><strong>Results:</strong> AudioSet eval mAP at parity with the published PANNs reference,
+						~0.45 to 0.50 on FSD50K, 95%+ on VocalSound's six vocal classes, and strong per-class AP on
+						the full target list. Trains end to end in 5 to 7 wall-clock days, versus 5 to 6 weeks for
+						the SSL alternative at the same hardware budget.</p>
 				</div>
 				<div class="card">
-					<h3>Tech Stack</h3>
-					<p>Kubernetes, security engineering, cryptography, container tooling</p>
-					<h3>Links</h3>
+					<h3>Stack</h3>
+					<p class="project-tags">
+						<span>PyTorch</span><span>DistributedDataParallel</span><span>NCCL</span><span>AudioSet</span><span>FSD50K</span><span>VGGSound</span><span>VocalSound</span><span>Nonspeech7k</span><span>HDF5</span>
+					</p>
+					<h3>Read more</h3>
 					<p>
-						<a href="https://github.com/ION606/encrypted-k8-msgs" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
+						<a href="audio-tagging">Project write-up</a>
 					</p>
 				</div>
 			</div>
 		</section>
 
 		<section>
-			<h2>ollama-plus</h2>
+			<h2>YOLOv3 from scratch in raw PyTorch</h2>
 			<div class="grid grid-cols-2">
 				<div class="stack-sm">
-					<p><strong>Problem:</strong> Teams working with sensitive data need production-grade ML inference
-						and
-						retrieval pipelines that never send data to external APIs.</p>
-					<p><strong>Solution:</strong> I built a self-hosted Open WebUI + Ollama stack with a RAG server,
-						custom plugins, and a Docker-sandboxed code execution tool - fully air-gappable.</p>
-					<p><strong>Results:</strong> A working ML infrastructure stack that runs entirely within a client's
-						own facilities, satisfying data residency requirements while delivering real RAG and agent
-						capabilities.</p>
+					<p><strong>Problem:</strong> deliver real-time multi-class object detection without depending on
+						<code>torchvision.ops</code>, <code>ultralytics</code>, or any high-level detection framework.
+						Used where the hosting environment forbids large third-party dependency surfaces or where
+						the deployment target needs every primitive auditable end to end.</p>
+					<p><strong>Solution:</strong> the full YOLOv3 detection pipeline implemented on
+						<code>torch.nn</code> primitives only. Darknet-53 backbone with the canonical 1-2-8-8-4
+						residual stages, FPN-style neck, three prediction heads at strides 8, 16, and 32, k-means
+						anchor priors clustered with IoU distance, and a tri-state target assignment (positive,
+						negative, ignore) that correctly excludes high-overlap non-best anchors from the
+						no-objectness loss.</p>
+					<p><strong>Results:</strong> COCO mAP@0.5 of ~55 at 416-pixel input and ~57 to 58 at 608, matching
+						the original paper. Modern upgrades available behind a flag: CIoU loss on decoded boxes for
+						+1 to 2 mAP at zero inference cost, and mosaic augmentation for measurable gains on
+						small-object recall at the stride-8 head.</p>
 				</div>
 				<div class="card">
-					<h3>Tech Stack</h3>
-					<p>Python, Docker, Open WebUI, Ollama, RAG, sandboxed exec</p>
-					<h3>Links</h3>
+					<h3>Stack</h3>
+					<p class="project-tags">
+						<span>PyTorch</span><span>NumPy</span><span>OpenCV</span><span>COCO</span><span>Darknet-53</span>
+					</p>
+					<h3>Read more</h3>
 					<p>
-						<a href="https://git.ion606.com/ION606/ollama-plus" target="_blank"
-							rel="noopener noreferrer">Gitea</a>
+						<a href="yolov3">Project write-up</a>
 					</p>
 				</div>
 			</div>
 		</section>
 
 		<section>
-			<h2>MailPocket Service</h2>
+			<h2>CRNN OCR for Latin and Chinese</h2>
 			<div class="grid grid-cols-2">
 				<div class="stack-sm">
-					<p><strong>Problem:</strong> Static and low-complexity web deployments often need reliable form
-						ingestion without introducing heavy third-party dependencies.</p>
-					<p><strong>Solution:</strong> I built a lightweight backend service in Go with clean HTTP ingestion,
-						storage support, and container-friendly deployment for quick integration into existing
-						infrastructure.</p>
-					<p><strong>Results:</strong> MailPocket powers real form workflows while remaining easy to operate
-						and extend. It demonstrates backend infrastructure pragmatism and operational simplicity.</p>
+					<p><strong>Problem:</strong> joint Latin and simplified Chinese line-text OCR for production use,
+						including signs, menus, addresses, alphanumeric codes, and mixed-script content like
+						<em>"iPhone 14 Pro"</em> or <em>"5号楼B座"</em>. Chinese turns three knobs hard at once:
+						vocabulary (~7,100 classes), font scarcity (an order of magnitude fewer good CJK fonts
+						than Latin), and a heavy frequency tail.</p>
+					<p><strong>Solution:</strong> a CRNN+CTC line recogniser tuned for the joint vocabulary. Input
+						height bumped from 32 to 48 pixels so CJK strokes remain resolvable after vertical
+						downsampling, vocabulary covering Tier 1 plus Tier 2 of the 通用规范汉字表 plus Latin
+						alphanumerics and both halfwidth and fullwidth punctuation, and a synthetic data pipeline
+						built on Depth Anything V2 and SAM 2 in place of the original SynthText monocular-depth and
+						gPb-UCM components.</p>
+					<p><strong>Results:</strong> a working production-quality joint Latin and Chinese line OCR
+						trained on a single RTX 5070 Ti in roughly two weeks of total project time, including data
+						pipeline, charset curation, pretraining, and fine-tuning on RCTW-17, LSVT, and ReCTS. CER
+						competitive with public CJK OCR baselines on the standard line-text benchmarks.</p>
 				</div>
 				<div class="card">
-					<h3>Tech Stack</h3>
-					<p>Go, SQLite, Docker, HTTP APIs</p>
-					<h3>Links</h3>
+					<h3>Stack</h3>
+					<p class="project-tags">
+						<span>PyTorch (cu128 / sm_120)</span><span>CTC</span><span>MJSynth</span><span>Synthetic Chinese String Dataset</span><span>RCTW-17</span><span>LSVT</span><span>ReCTS</span><span>Depth Anything V2</span><span>SAM 2</span><span>fontTools</span><span>LMDB</span>
+					</p>
+					<h3>Read more</h3>
 					<p>
-						<a href="https://github.com/ION606/MailPocket" target="_blank"
-							rel="noopener noreferrer">GitHub</a>
+						<a href="crnn-ocr">Project write-up</a>
 					</p>
 				</div>
 			</div>
 		</section>
 
 		<section>
-			<h2>More Projects</h2>
+			<h2>Discuss a project</h2>
 			<p class="intro">
-				Explore additional repositories focused on infrastructure engineering,
-				containerization workflows, and ML tooling.
+				If a problem in this neighborhood is on your roadmap, the write-ups above are a fair preview of
+				how we approach scoping, hardware budgeting, and design rigor.
 			</p>
 			<div class="center-action">
-				<a href="projects" class="btn">View Projects Index</a>
+				<a href="contact" class="btn">Get in touch</a>
 			</div>
 		</section>
 	</main>
@@ -150,8 +169,6 @@
 			</div>
 			<div>
 				<p>
-					<a href="projects">All Projects</a> |
-					<!-- <a href="https://git.cribrum.dev/cribrum" target="_blank" rel="noopener noreferrer">Gitea</a> | -->
 					<a href="https://github.com/cribrum-systems" target="_blank" rel="noopener noreferrer">GitHub</a> |
 					<a href="https://www.linkedin.com/company/cribrum" target="_blank"
 						rel="noopener noreferrer">LinkedIn</a>

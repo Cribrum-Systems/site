@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>CRNN OCR for Latin and Chinese - Cribrum Systems LLC</title>
+	<meta name="description"
+		content="A production-grade joint Latin and Chinese line-text OCR built on the CRNN+CTC stack with a 7,100-class joint vocabulary, custom synthetic data pipeline, and fine-tune on RCTW-17, LSVT, and ReCTS." />
+	<meta name="author" content="Itamar Oren-Naftalovich" />
+	<meta name="robots" content="index, follow" />
+	<meta name="theme-color" content="#0a9396" />
+	<link rel="canonical" href="https://cribrum.dev/crnn-ocr" />
+	<meta property="og:type" content="article" />
+	<meta property="og:site_name" content="Cribrum Systems LLC" />
+	<meta property="og:title" content="CRNN OCR for Latin and Chinese" />
+	<meta property="og:description"
+		content="Joint Latin and Chinese line-text OCR built on the CRNN+CTC stack." />
+	<meta property="og:url" content="https://cribrum.dev/crnn-ocr" />
+	<meta property="og:image" content="https://cribrum.dev/assets/img/logo.png" />
+	<meta property="og:image:alt" content="Cribrum Systems LLC logo" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="CRNN OCR for Latin and Chinese" />
+	<meta name="twitter:description"
+		content="Joint Latin and Chinese line-text OCR built on the CRNN+CTC stack." />
+	<meta name="twitter:image" content="https://cribrum.dev/assets/img/logo.png" />
+	<meta name="twitter:image:alt" content="Cribrum Systems LLC logo" />
+	<link rel="icon" href="/assets/img/logo-with-bk.png" type="image/png" />
+	<link rel="stylesheet" href="assets/css/styles.css" />
+	<style>
+		.article-shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); margin-top: 1.6rem; }
+		@media (min-width: 1080px) { .article-shell { grid-template-columns: 240px minmax(0, 1fr); align-items: flex-start; } }
+		.toc { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.1rem 1.15rem; box-shadow: var(--shadow-soft); font-size: 0.88rem; }
+		@media (min-width: 1080px) { .toc { position: sticky; top: 92px; max-height: calc(100vh - 110px); overflow-y: auto; } }
+		.toc h2 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 0.7rem; }
+		.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc-counter; }
+		.toc li { counter-increment: toc-counter; padding: 0.18rem 0; border-left: 2px solid transparent; padding-left: 0.6rem; margin-left: -0.6rem; transition: border-color 0.18s ease, background-color 0.18s ease; }
+		.toc li:hover { border-left-color: var(--primary-color); background-color: var(--surface-muted); }
+		.toc a { color: var(--text-color); display: block; }
+		.toc a::before { content: counter(toc-counter, decimal-leading-zero); color: var(--primary-color); font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; margin-right: 0.55rem; letter-spacing: 0.04em; }
+		.toc a:hover { color: var(--primary-color); }
+		.article { min-width: 0; max-width: 760px; }
+		.article-header { border-bottom: 1px solid var(--border-color); padding-bottom: 1.6rem; margin-bottom: 2rem; }
+		.article-eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 1rem; }
+		.article-eyebrow::before { content: ""; width: 1.6rem; height: 2px; background-color: var(--primary-color); }
+		.article h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.18; margin-bottom: 0.9rem; }
+		.article-meta { display: flex; flex-wrap: wrap; gap: 0.8rem 1.4rem; font-size: 0.85rem; color: var(--text-muted); font-family: "IBM Plex Mono", monospace; }
+		.article-meta span strong { color: var(--text-color); font-weight: 600; }
+		.article .lede { background-color: var(--surface-muted); border-left: 3px solid var(--primary-color); padding: 1.1rem 1.25rem; border-radius: 0 12px 12px 0; font-size: 1.02rem; line-height: 1.7; margin: 1.6rem 0 0; }
+		.article .lede strong { color: var(--text-color); }
+		.article section { margin-top: 3rem; scroll-margin-top: 96px; }
+		.article section h2 { text-align: left; font-size: clamp(1.35rem, 2.6vw, 1.7rem); line-height: 1.25; margin-bottom: 0.4rem; padding-top: 0.4rem; border-top: 1px solid var(--border-color); padding-block-start: 1.6rem; }
+		.article section h2 .section-num { font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; color: var(--primary-color); margin-right: 0.6rem; letter-spacing: 0.08em; }
+		.article h3 { font-size: 1.08rem; margin: 1.5rem 0 0.4rem; color: var(--text-color); }
+		.article p { margin: 0.85rem 0; line-height: 1.7; }
+		.article ul, .article ol { margin: 0.7rem 0 0.9rem 1.4rem; }
+		.article li { margin: 0.35rem 0; line-height: 1.6; }
+		.article a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--primary-color) 40%, transparent); text-underline-offset: 3px; }
+		.article a:hover { text-decoration-color: var(--primary-color); }
+		.article strong { color: var(--text-color); }
+		.article .table-wrap { overflow-x: auto; margin: 1rem 0 1.4rem; border: 1px solid var(--border-color); border-radius: 12px; }
+		.article table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+		.article table th, .article table td { padding: 0.65rem 0.85rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+		.article table th { background-color: var(--surface-muted); font-weight: 600; font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+		.article table tbody tr:last-child td { border-bottom: none; }
+		.article table tbody tr:nth-child(even) td { background-color: color-mix(in srgb, var(--surface-muted) 50%, transparent); }
+		.article table td.num, .article table th.num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; text-align: right; }
+		.callout { background-color: var(--surface-color); border: 1px solid var(--border-color); border-left: 4px solid var(--primary-color); border-radius: 0 12px 12px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; box-shadow: var(--shadow-soft); }
+		.callout-label { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--primary-color); font-weight: 700; margin-bottom: 0.4rem; }
+		.callout p { margin: 0.3rem 0; font-size: 0.94rem; }
+		.article-end { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--border-color); }
+		.article-end .center-action { margin-top: 1.2rem; }
+		.pill { display: inline-flex; align-items: center; gap: 0.35rem; background-color: var(--primary-soft); color: var(--primary-dark); padding: 0.18rem 0.65rem; border-radius: 999px; font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+		:root[data-theme="dark"] .pill { color: var(--primary-color); }
+		.pill::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; }
+	</style>
+</head>
+
+<body>
+	<header>
+		<div class="container header-inner">
+			<a href="/" class="logo"><img src="/assets/img/logo.png" alt="Cribrum Systems LLC" /></a>
+			<nav>
+				<ul>
+					<li><a href="services">Services</a></li>
+					<li><a href="work">Work</a></li>
+					<li><a href="about">About</a></li>
+					<li><a href="contact" class="contact-button">Contact</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<main class="container">
+		<div class="article-shell">
+
+			<aside class="toc" aria-label="Table of contents">
+				<h2>On this page</h2>
+				<ol>
+					<li><a href="#scope">Scope and the Chinese problem</a></li>
+					<li><a href="#architecture">Architecture</a></li>
+					<li><a href="#ctc">CTC, briefly</a></li>
+					<li><a href="#vocabulary">Vocabulary design</a></li>
+					<li><a href="#synthetic">Synthetic data pipeline</a></li>
+					<li><a href="#datasets">Real-data fine-tuning</a></li>
+					<li><a href="#ops">Operational characteristics</a></li>
+				</ol>
+			</aside>
+
+			<article class="article">
+
+				<header class="article-header">
+					<div class="article-eyebrow">Project write-up <span class="pill">OCR</span></div>
+					<h1>CRNN OCR for Latin and Chinese</h1>
+					<div class="article-meta">
+						<span><strong>Domain</strong> &nbsp; line-text OCR, joint Latin + Simplified Chinese</span>
+						<span><strong>Hardware</strong> &nbsp; single RTX 5070 Ti</span>
+						<span><strong>Vocabulary</strong> &nbsp; ~7,100 classes</span>
+					</div>
+					<p class="lede">
+						<strong>The system</strong> is a production-grade joint Latin and Simplified Chinese line-text
+						OCR built on the CRNN+CTC stack at a roughly 7,100-class joint vocabulary. It handles
+						Latin-only, Chinese-only, and mixed-script content (<em>"iPhone 14 Pro"</em>,
+						<em>"Wi-Fi 密码"</em>, <em>"5号楼B座"</em>) and is trained on a single RTX 5070 Ti in roughly
+						two weeks of total project time, including data pipeline, charset curation, pretraining,
+						and fine-tuning on RCTW-17, LSVT, and ReCTS. CRNN+CTC remains the right baseline for
+						alignment-free monotonic line recognition in 2026 even with transformers everywhere,
+						because the architecture maps cleanly onto the problem and runs in
+						<code>O(T &middot; U)</code> with no autoregressive decode.
+					</p>
+				</header>
+
+				<section id="scope">
+					<h2><span class="section-num">01</span>Scope and the Chinese problem</h2>
+					<p>
+						Latin OCR is comparatively easy at this scale: a 95-class softmax, MJSynth-style synthetic
+						data, and a day of pretraining are enough for production-quality results. Chinese turns
+						three knobs hard simultaneously and the architecture has to absorb all three at once.
+					</p>
+					<ol>
+						<li><strong>Vocabulary explosion.</strong> A useful production vocabulary is roughly 7,100
+							classes versus 95 for Latin, two orders of magnitude larger.</li>
+						<li><strong>Font scarcity.</strong> Latin OCR pipelines (SynthText, MJSynth) draw from
+							~1,400 fonts. CJK has perhaps 10 to 20 high-quality fonts with full coverage of the
+							target vocabulary, an order of magnitude fewer.</li>
+						<li><strong>Heavy frequency tail.</strong> The top 1,000 Chinese characters cover &gt;95% of
+							token mass; the long tail is genuinely hard to train without targeted data construction.</li>
+					</ol>
+					<p>
+						The architecture changes very little to handle Chinese; the data pipeline and synthesis
+						strategy carry the load. The system therefore over-invests in synthetic data, charset
+						design, and font coverage validation, and uses a deliberately simple recogniser.
+					</p>
+				</section>
+
+				<section id="architecture">
+					<h2><span class="section-num">02</span>Architecture</h2>
+					<p>
+						The model is the canonical Shi-Bai-Yao 2015 CRNN: a 7-layer VGG-style convolutional
+						backbone, a map-to-sequence reshape that squeezes the height to 1, two stacked
+						bidirectional LSTMs, and a CTC transcription head. The architecture is unchanged from the
+						original publication; what is tuned is the input height and the vertical pooling cascade.
+					</p>
+					<p>
+						The two <strong>non-square pooling layers (1&times;2 windows)</strong> are the key trick.
+						They preserve horizontal resolution while continuing to halve vertical resolution, so a
+						100-pixel word produces ~25 frames rather than the ~6 you would get from four square
+						pooling layers. Each frame's effective receptive-field width is roughly 1.5 character widths
+						with a frame stride of 4 pixels, which means adjacent frames overlap heavily and each frame
+						sees its character plus context. That overlap is what lets the BiLSTM disambiguate split
+						glyphs (lowercase L versus the left half of H, the digram <code>rn</code> versus
+						<code>m</code>) without committing to character boundaries.
+					</p>
+
+					<div class="callout">
+						<div class="callout-label">Input height for CJK</div>
+						<p>The system bumps input height from the Latin-default 32 pixels to 48 pixels. A typical
+							Chinese character has 10 to 20 strokes packed into a square; at 32 pixels after stride-32
+							vertical downsampling, single strokes become sub-pixel-distinguishable, which is the known
+							failure mode behind misreads like 入 vs 人, 千 vs 干, and 末 vs 未. The pooling cascade is
+							adjusted to a 3-2-2-2-2 pattern that produces 48 to 24 to 12 to 6 to 3 to 1, with a final
+							3&times;1 pool collapsing the last height dimension. Naively upsampling the input to 48
+							while keeping 32-tuned strides does not work and is a common implementation trap.</p>
+					</div>
+				</section>
+
+				<section id="ctc">
+					<h2><span class="section-num">03</span>CTC, briefly</h2>
+					<p>
+						Connectionist Temporal Classification (Graves et al., 2006) is what makes CRNN work. The
+						model emits one softmax distribution per frame over the joint vocabulary plus a special
+						<em>blank</em> symbol; CTC computes the marginal probability of a target label sequence by
+						summing over all alignments via a forward-backward dynamic program in
+						<code>O(T &middot; U)</code> time. The loss is the negative log of that marginal.
+					</p>
+					<p>
+						The defining mathematical property of CTC is that the gradient with respect to the
+						pre-softmax logits reduces to <strong>softmax outputs minus a soft target distribution</strong>,
+						where the soft target is the CTC posterior computed by forward-backward. This is
+						structurally identical to ordinary cross-entropy except the target is the marginalised
+						alignment posterior rather than a one-hot label. The practical consequence is that CTC
+						drops into any softmax network as a pure loss-function replacement, with no special
+						numerical handling needed at the gradient interface and full compatibility with bf16
+						autocast everywhere except the loss itself.
+					</p>
+					<p>
+						Three real consequences of CTC's frame-wise conditional independence shape the system:
+					</p>
+					<ul>
+						<li><strong>No internal language model.</strong> Output-side linguistic regularities come
+							only via the encoder's representation of the image. Plain CTC under-models language and
+							benefits substantially from an external n-gram or neural LM at decode time, integrated
+							via prefix beam search.</li>
+						<li><strong>Peaky alignments.</strong> CTC concentrates almost all probability mass on a
+							single dominant alignment with most frames emitting blank; this is well-documented and
+							is not a bug.</li>
+						<li><strong>Modular LM integration.</strong> The flip side of having no internal LM is that
+							external LMs slot into prefix beam search cleanly without retraining, which attention
+							encoder-decoders cannot do.</li>
+					</ul>
+					<p>
+						For Chinese, an external LM helps less than for English because character-level n-gram
+						coverage of CJK is weaker and Chinese line text in scenes is often non-grammatical short
+						tokens (signs, codes, addresses). The system uses greedy CTC decoding by default and
+						supports prefix beam search with optional LM integration where the deployment justifies it.
+					</p>
+				</section>
+
+				<section id="vocabulary">
+					<h2><span class="section-num">04</span>Vocabulary design</h2>
+					<p>
+						The output vocabulary is the single highest-impact design decision for production Chinese
+						OCR. The system uses Tier 1 plus Tier 2 of the <strong>通用规范汉字表 (Table of General
+						Standard Chinese Characters, 2013)</strong>: 6,500 characters covering &gt;99.9% of
+						contemporary mainland Chinese text by frequency, plus 62 Latin alphanumerics, ASCII
+						punctuation, fullwidth Chinese punctuation, and roughly 500 frequent Tier 3 / domain
+						characters, for a total of approximately 7,113 classes including the CTC blank.
+					</p>
+					<p>
+						Going to GBK scale (~21,000 characters) is wasteful: tail classes are untrainable without
+						billions of samples and bloat the output projection. Going below 3,500 misses common
+						characters in real-world domain text such as menus, addresses, and signage. Tier 1+2 is the
+						correct production setpoint.
+					</p>
+
+					<div class="callout">
+						<div class="callout-label">Halfwidth and fullwidth punctuation are different classes</div>
+						<p>The half-width comma <code>,</code> (U+002C) and the fullwidth comma
+							<code>，</code> (U+FF0C) are different code points with different visual metrics. Real
+							signage uses fullwidth in Chinese-only contexts and halfwidth in mixed contexts, and the
+							distinction is recoverable from glyph advance width. The system keeps them as separate
+							classes throughout and only normalises them at <em>evaluation</em> time, matching ICDAR
+							competition protocols.</p>
+					</div>
+
+					<p>
+						<strong>Radical-based decomposition</strong> (Ideographic Description Sequences) is
+						deliberately not used. Decomposing each character into roughly 500 components plus 12 IDS
+						structural operators collapses the output vocabulary to ~512 and is research-grade for
+						zero-shot handwritten character recognition, but it has serious downsides for production
+						line OCR: many-to-many mapping (multiple decompositions exist), 3 to 7&times; sequence
+						inflation forcing wider input or denser strides, severe class imbalance among radicals, and
+						a non-trivial radical-to-character matcher at decode. Every shipped Chinese OCR (PaddleOCR,
+						EasyOCR, Tesseract <code>chi_sim</code>) uses flat-character classes for these reasons. The
+						system follows that convention.
+					</p>
+				</section>
+
+				<section id="synthetic">
+					<h2><span class="section-num">05</span>Synthetic data pipeline</h2>
+					<p>
+						The training corpus is dominated by synthetic data. The pipeline follows the SynthText
+						recipe (Gupta, Vedaldi, Zisserman, CVPR 2016) in shape, but replaces two of its 2016
+						components with their 2025-era successors:
+					</p>
+
+					<div class="table-wrap">
+						<table>
+							<thead>
+								<tr>
+									<th>Pipeline stage</th>
+									<th>Original (2016)</th>
+									<th>Modern (this system)</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Monocular depth</td>
+									<td>Liu 2014 CNN</td>
+									<td>Depth Anything V2 ViT-B</td>
+								</tr>
+								<tr>
+									<td>Region segmentation</td>
+									<td>gPb-UCM (~30 s/image CPU)</td>
+									<td>SAM 2 in automatic mode (~0.5 s/image)</td>
+								</tr>
+								<tr>
+									<td>Text rendering</td>
+									<td>FreeType + PIL</td>
+									<td>Same</td>
+								</tr>
+								<tr>
+									<td>Blending</td>
+									<td>Poisson editing (mixed gradients)</td>
+									<td>Same; OpenCV <code>seamlessClone</code></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<p>
+						The two replacements are drop-in upgrades: 30 to 100&times; throughput improvement at
+						equivalent or better region quality, since SAM produces closed object-level masks that are
+						actually better for placing text on signs, panels, and surfaces than gPb-UCM's low-level
+						colour and texture masks ever were.
+					</p>
+					<p>
+						<strong>Font coverage validation is the single most damaging silent bug in CJK
+						synthesis.</strong> Rendering a string with a font that lacks coverage for one of its
+						characters produces a <code>.notdef</code> tofu box in the image while the label still
+						says the original character, silently corrupting training data. The system pre-builds a
+						<code>(font, codepoint)</code> coverage matrix at startup using <code>fontTools</code> and
+						samples only fonts with full coverage of the chosen string. This is not optional.
+					</p>
+					<p>
+						Font selection covers the major style families: <strong>Songti</strong> (serif/print),
+						<strong>Heiti</strong> (sans/sign), <strong>Kaiti</strong> (regular-script handwriting),
+						<strong>Xingshu</strong> (semi-cursive), <strong>Fangsong</strong> (government documents),
+						and <strong>Lishu</strong> (clerical/ornamental). Five to eight fonts is enough; gains
+						plateau past ~10 because glyph-shape variance is constrained by readability.
+					</p>
+					<p>
+						The text-sampling regime mixes natural corpus sampling (Wikipedia, news) with uniform-vocabulary
+						sampling so rare-but-in-vocab characters get adequate coverage despite their natural-frequency
+						suppression. The joint Latin+Chinese mix is roughly 30% Latin-only, 50% Chinese-only with
+						frequency plus rare-uniform oversampling, and 20% mixed-script content. Mixed is exactly
+						where naive single-script models fail.
+					</p>
+				</section>
+
+				<section id="datasets">
+					<h2><span class="section-num">06</span>Real-data fine-tuning</h2>
+					<p>
+						After synthetic pretraining the model is fine-tuned on real Chinese line-text crops from
+						the standard public benchmarks:
+					</p>
+
+					<div class="table-wrap">
+						<table>
+							<thead>
+								<tr>
+									<th>Dataset</th>
+									<th class="num">Size</th>
+									<th>Role</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><strong>RCTW-17</strong></td>
+									<td class="num">12,263 images</td>
+									<td>Scene text, mixed orientations.</td>
+								</tr>
+								<tr>
+									<td><strong>LSVT</strong></td>
+									<td class="num">450,000 (50K labelled, 400K weakly labelled)</td>
+									<td>Large-scale street view; the weak split is used semi-supervised.</td>
+								</tr>
+								<tr>
+									<td><strong>ReCTS-25k</strong></td>
+									<td class="num">25,000</td>
+									<td>Signboards; high domain match for shop/storefront OCR.</td>
+								</tr>
+								<tr>
+									<td>ArT, ICDAR2019-MLT, MTWI</td>
+									<td class="num">~50,000 combined</td>
+									<td>Curved, multi-oriented, web text. Optional inclusion.</td>
+								</tr>
+								<tr>
+									<td>Synthetic Chinese String Dataset</td>
+									<td class="num">~3.6 M</td>
+									<td>Standard public synthetic; complements in-house synthesis.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<p>
+						The reporting metric is <strong>Character Error Rate</strong> (CER, normalised edit
+						distance), the ICDAR-RCTW / RRC-LSVT / ReCTS standard, reported both raw and after NFKC
+						normalisation. WER and sequence-accuracy are reported alongside for downstream consumers
+						that need them. The system is competitive with public CJK OCR baselines on the standard
+						line-text benchmarks at the headline metric.
+					</p>
+				</section>
+
+				<section id="ops">
+					<h2><span class="section-num">07</span>Operational characteristics</h2>
+					<p>
+						The full training stack runs on a single RTX 5070 Ti (sm_120, 16 GB) with PyTorch cu128
+						wheels and bf16 autocast across the conv and BiLSTM stages. The CTC loss runs in fp32
+						because the cuDNN CTC kernel is fp32-only; this is a deliberate dtype boundary and is the
+						single most common implementation trap with PyTorch+CTC on modern GPUs. bf16 is preferred
+						over fp16 because bf16 has the fp32 exponent range, no <code>GradScaler</code> is required,
+						and throughput is identical on Blackwell tensor cores.
+					</p>
+					<p>
+						Variable-width inputs are handled by aspect-ratio bucketing: dataset indices are sorted by
+						image width, grouped into batches, and bucket order is shuffled per epoch. For Chinese
+						line text spanning 100 to 1,500 pixels, bucketing yields a 30 to 50% throughput improvement
+						over global pad-to-max because almost all of the wasted padding compute disappears.
+					</p>
+					<p>
+						Memory at the working batch size of 128 (input height 48, varying widths) sits comfortably
+						under 4 GB live; gradient accumulation is unnecessary on this hardware for this model.
+						Total project time from clean repo to a working production-quality joint Latin + Chinese
+						line OCR is roughly two weeks, dominated by data pipeline construction and font coverage
+						curation rather than model training.
+					</p>
+				</section>
+
+				<section class="article-end">
+					<h3>Summary</h3>
+					<p>
+						The CRNN+CTC architecture is unchanged from 2015 to 2026: the 7-conv VGG backbone, the
+						1&times;2 height-only pooling trick, the 2-layer 256-unit BiLSTM, and the CTC transcription
+						head still define the right baseline for monotonic line recognition. What has moved
+						underneath is the stack: cu128 wheels for sm_120, bf16 autocast on Blackwell tensor cores,
+						and Depth Anything V2 plus SAM 2 replacing the original SynthText monocular-depth and
+						gPb-UCM components at 30 to 100&times; throughput. What has not moved is the tradeoffs:
+						CTC is still alignment-free and monotonic, scene-text recognition is still cropped-line
+						prediction, and Chinese is still defined by font scarcity and a heavy character-frequency
+						tail. The system is built around those constants.
+					</p>
+
+					<div class="center-action btn-group">
+						<a href="work" class="btn">Back to Selected Work</a>
+						<a href="contact" class="btn">Discuss this work</a>
+					</div>
+				</section>
+
+			</article>
+		</div>
+	</main>
+
+	<footer>
+		<div class="container footer-inner">
+			<div>
+				<p>&copy; 2026 Cribrum Systems LLC.</p>
+				<p>Powered by open source and coffee.</p>
+			</div>
+			<div>
+				<p>
+					<a href="https://github.com/cribrum-systems" target="_blank" rel="noopener noreferrer">GitHub</a> |
+					<a href="https://www.linkedin.com/company/cribrum" target="_blank"
+						rel="noopener noreferrer">LinkedIn</a>
+					|
+					<a href="privacy">Privacy</a>
+				</p>
+			</div>
+		</div>
+	</footer>
+	<script type="module" src="assets/js/main.js"></script>
+</body>
+
+</html>

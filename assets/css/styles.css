@@ -81,7 +81,7 @@ a:focus-visible {
 	margin: 0 auto;
 }
 
-header {
+body > header {
 	background-color: var(--surface-color);
 	border-bottom: 1px solid var(--border-color);
 	position: sticky;
